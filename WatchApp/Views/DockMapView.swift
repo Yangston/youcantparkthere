@@ -81,18 +81,10 @@ struct DockMapView: View {
     private var controls: some View {
         HStack(spacing: 4) {
             Button { model.mode = model.mode == .docks ? .bikes : .docks } label: {
-                Label(model.mode.title, systemImage: model.mode.symbol)
+                Label(model.mode == .bikes && model.bikeFilter == .electric ? "E-bikes" : model.mode.title, systemImage: model.mode.symbol)
                     .font(.system(size: 12, weight: .bold)).padding(.horizontal, 6).frame(height: 28)
             }.buttonStyle(.plain).background(.regularMaterial, in: Capsule())
                 .accessibilityHint("Switch between parking and bikes")
-            if model.mode == .bikes {
-                Button { model.bikeFilter = model.bikeFilter == .all ? .electric : .all } label: {
-                    Image(systemName: model.bikeFilter == .electric ? "bolt.fill" : "bolt")
-                        .font(.system(size: 12, weight: .bold)).frame(width: 28, height: 28)
-                        .foregroundStyle(model.bikeFilter == .electric ? .orange : .primary)
-                }.buttonStyle(.plain).background(.regularMaterial, in: Circle())
-                    .accessibilityLabel(model.bikeFilter == .electric ? "E-bikes only. Show all bikes" : "All bikes. Show e-bikes only")
-            }
             Spacer(minLength: 0)
 
         }
@@ -125,12 +117,20 @@ struct DockMapView: View {
             }
             HStack(spacing: 4) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(model.mode == .bikes && model.bikeFilter == .electric ? "E-bikes · \(model.locationLabel)" : model.locationLabel)
+                    Text(model.locationLabel).lineLimit(2)
                         .foregroundStyle(model.isDemo ? .orange : .primary)
                     Text(model.error == nil ? model.freshnessLabel : "Connection issue · settings")
                         .foregroundStyle(model.error == nil ? Color.secondary : Color.orange)
                 }.font(.system(size: 8)).lineLimit(1).minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
+                if model.mode == .bikes {
+                    Button { model.bikeFilter = model.bikeFilter == .all ? .electric : .all } label: {
+                        Image(systemName: model.bikeFilter == .electric ? "bolt.fill" : "bolt")
+                            .font(.system(size: 12, weight: .bold)).frame(width: 28, height: 28)
+                            .foregroundStyle(model.bikeFilter == .electric ? .orange : .primary)
+                    }.buttonStyle(.plain).background(.regularMaterial, in: Circle())
+                        .accessibilityLabel(model.bikeFilter == .electric ? "E-bikes only. Show all bikes" : "All bikes. Show e-bikes only")
+                }
                 Button { model.riding ? model.stopRide() : model.startRide() } label: {
                     Label(model.riding ? "End" : "Ride", systemImage: model.riding ? "stop.fill" : "bicycle")
                         .font(.system(size: 11, weight: .bold)).frame(minHeight: 28)

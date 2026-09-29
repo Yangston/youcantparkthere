@@ -922,3 +922,14 @@ footer span:last-child {
   border-radius: 50%;
   font-size: 11px;
 }
+
+.map-bottom #electric {
+  font-size: 12px;
+  width: 22px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+}
+.map-bottom #electric.selected-filter {
+  color: var(--orange);
+}
