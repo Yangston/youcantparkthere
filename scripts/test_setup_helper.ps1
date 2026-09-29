@@ -38,3 +38,6 @@ try {
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }
+# Reached only after all assertions and cleanup succeed. The last child process
+# intentionally returned 1 for a negative case; do not forward that expected code.
+exit 0
