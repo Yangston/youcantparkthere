@@ -19,10 +19,16 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
       - name: Install project generator
         run: brew install xcodegen
-      - name: Test station logic, decoder, client, and ride detector
+      - name: Test CI helper scripts
+        id: helpers
         run: |
           set -o pipefail
           mkdir -p build
+          python3 -m unittest discover -s scripts/tests -v 2>&1 | tee build/helper-tests.log
+      - name: Test station logic and routes
+        id: core
+        run: |
+          set -o pipefail
           swift test 2>&1 | tee build/tests.log
       - name: Generate app assets and project
         run: |
@@ -30,6 +36,7 @@ jobs:
           python3 scripts/make_assets.py
           xcodegen generate
       - name: Build watch simulator and widgets
+        id: compile
         run: |
           set -o pipefail
           xcodebuild -project YouCantParkThere.xcodeproj -scheme ParkWatch \
@@ -38,6 +45,7 @@ jobs:
             -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build \
             2>&1 | tee build/watch-build.log
       - name: Validate unsigned distribution archive
+        id: archive
         run: |
           set -o pipefail
           xcodebuild -project YouCantParkThere.xcodeproj -scheme ParkDistribution \
@@ -46,11 +54,13 @@ jobs:
             2>&1 | tee build/archive.log
           python3 scripts/check_archive.py build/YouCantParkThere.xcarchive
       - name: Check operator's live feed separately from deterministic tests
+        id: feed
         continue-on-error: true
         run: |
           set -o pipefail
           swift run ParkFeedCheck 2>&1 | tee build/live-feed.log
-      - name: Launch simulator and exercise deep links
+      - name: Launch paired simulator and assert in-app routes
+        id: smoke
         run: |
           set -o pipefail
           python3 scripts/simulator_smoke.py 2>&1 | tee build/simulator-smoke.log
@@ -64,7 +74,25 @@ jobs:
                   if 'error:' in line.lower() or 'error(' in line.lower():
                       print('::error::' + line.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
           PY
-      - name: Save logs, screenshots, and simulator app
+      - name: Write readable check summary
+        if: always()
+        env:
+          HELPERS: ${{ steps.helpers.outcome }}
+          CORE: ${{ steps.core.outcome }}
+          COMPILE: ${{ steps.compile.outcome }}
+          ARCHIVE: ${{ steps.archive.outcome }}
+          FEED: ${{ steps.feed.outcome }}
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          python3 - <<'PY'
+          import os
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write('## What this run checked\n\n| Check | Result |\n|---|---|\n')
+              for key, label in [('HELPERS','CI helper tests'),('CORE','Portable Swift tests'),('COMPILE','Watch + widget compilation'),('ARCHIVE','Unsigned packaging'),('FEED','Live feed (diagnostic)'),('SMOKE','Paired simulator launch + in-app route state')]:
+                  f.write(f'| {label} | {os.environ.get(key, "not run")} |\n')
+              f.write('\nSimulator routing calls the production handler through a simulator-only test hook. It does not prove OS delivery from a real complication.\n\nSigning, TestFlight upload, physical-watch GPS, and wrist-raise behavior are separate checks. See docs/SETUP.md and docs/DEVICE_TESTS.md.\n')
+          PY
+      - name: Save logs, screenshots, state reports, and simulator app
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -72,6 +100,7 @@ jobs:
           path: |
             build/*.log
             build/*.png
+            build/demo-*.json
             build/DerivedData/Build/Products/Debug-watchsimulator/*.app
           if-no-files-found: ignore
           retention-days: 14

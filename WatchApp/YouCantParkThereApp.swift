@@ -9,14 +9,12 @@ struct YouCantParkThereWatchApp: App {
     var body: some Scene {
         WindowGroup {
             RootView().environmentObject(model)
-                .task { model.sceneActive(true) }
-                .onChange(of: scenePhase) { _, phase in model.sceneActive(phase == .active) }
-                .onOpenURL { url in
-                    guard url.scheme == "youcantparkthere" else { return }
-                    model.mode = url.host == "bikes" ? .bikes : .docks
-                    model.tab = 0
-                    if url.host == "ride" { model.startRide() }
+                .task {
+                    model.sceneActive(true)
+                    SimulatorSmoke.runIfRequested(model: model)
                 }
+                .onChange(of: scenePhase) { _, phase in model.sceneActive(phase == .active) }
+                .onOpenURL { url in model.open(url) }
         }
     }
 }
