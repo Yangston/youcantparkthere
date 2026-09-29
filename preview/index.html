@@ -1,32 +1,172 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="dark"><title>Park / Preview Studio</title>
-  <link rel="stylesheet" href="styles.css">
-  <script defer src="report.js"></script><script defer src="logic.js"></script><script defer src="app.js"></script>
-</head>
-<body>
-  <header class="topbar"><a class="brand" href="#"><span class="brand-icon">P</span><span>Park <small>PREVIEW STUDIO</small></span></a><span class="local-badge">DEVELOPMENT ONLY</span><a href="https://github.com/Yangston/youcantparkthere/actions/workflows/build.yml" target="_blank" rel="noreferrer">Open native CI ↗</a></header>
-  <div class="layout">
-    <aside><p class="eyebrow">SCENARIO LIBRARY</p><h1>Every state.<br>Before your wrist.</h1><p class="muted">Explore interactions, then review the actual watchOS renders.</p><nav id="scenarios" aria-label="Preview scenarios"></nav><div class="sidebar-note">Sample station data only.<br>No GPS, motion or Apple credentials.</div></aside>
-    <main>
-      <div class="workspace-header"><div><p class="eyebrow" id="scenario-group"></p><h2 id="scenario-title"></h2><p class="muted" id="scenario-description"></p></div><div class="mode-switch" role="group" aria-label="Preview type"><button id="sandbox-mode" aria-pressed="true">Interaction sandbox</button><button id="native-mode" aria-pressed="false">Native captures</button></div></div>
-      <section id="sandbox-panel" aria-label="Interaction sandbox">
-        <div class="notice"><strong>Interaction sketch · not SwiftUI</strong><span>This is an approximation for exploring behavior. SwiftUI edits appear in native captures after CI, not automatically in this sketch.</span></div>
-        <div class="sandbox-grid"><div class="stage"><div class="stage-toolbar"><label>Watch size <select id="watch-size"><option value="compact">Compact</option><option value="large">Large</option></select></label><button id="reset">Reset scenario ↺</button></div><div class="watch" id="watch"><div class="watch-chrome"><span>PREVIEW</span><span>9:41</span></div><div id="watch-screen" class="watch-screen"></div><nav class="watch-tabs" aria-label="Watch pages"><button data-page="map" aria-label="Map">●</button><button data-page="nearby" aria-label="Nearby list">●</button><button data-page="settings" aria-label="Settings">●</button></nav></div><p class="stage-caption">Click the controls in the watch. Scroll inside lists.</p></div>
-          <div class="inspector"><p class="eyebrow">STATE INSPECTOR</p><h3>What the app knows</h3><dl id="state"></dl><div class="legend"><span><i class="green"></i>3+ available</span><span><i class="yellow"></i>1–2 available</span><span><i class="red"></i>Fresh zero</span><span><i class="gray"></i>Unknown / closed</span></div><p class="muted">A failed request never means “full.” A cached map never makes old counts fresh.</p><div id="interaction-note" role="status"></div></div></div>
-      </section>
-      <section id="native-panel" aria-label="Native simulator captures" hidden>
-        <div class="notice native-notice"><strong>Actual SwiftUI · watchOS Simulator</strong><span id="native-provenance"></span></div>
-        <div class="native-toolbar"><a id="run-link" target="_blank" rel="noreferrer" hidden>View source run ↗</a><label class="file-button">Load baseline folder<input id="baseline" type="file" webkitdirectory multiple></label><button id="clear-baseline" hidden>Clear baseline</button><label>Comparison <select id="compare"><option value="side">Side by side</option><option value="wipe">Wipe overlay</option></select></label><label id="wipe-control" hidden>Reveal <input id="wipe" type="range" min="0" max="100" value="50"></label></div>
-        <p id="baseline-note" class="muted" role="status">Optional: select an extracted older preview folder for a visual comparison.</p>
-        <div id="native-stage" class="native-stage"></div>
-        <div id="native-empty" class="empty" hidden><span class="empty-icon">⌘</span><h3>No native capture for this state</h3><p>Push a development branch and run <strong>Build and test</strong>. Download <code>watch-preview-compact</code> or <code>watch-preview-large</code>, then open its <code>index.html</code>.</p><p>To bring it into this studio:</p><code>python scripts/dev.py import path/to/watch-preview-compact.zip</code><p class="muted">An unpushed SwiftUI edit cannot run in Apple’s simulator on Windows.</p></div>
-        <div id="checks" class="checks"></div>
-      </section>
-      <footer><span id="capture-count"></span><span>Simulator captures do not validate physical GPS, motion, battery, haptics or complication delivery.</span></footer>
-    </main>
-  </div>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Park / Preview Studio</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="report.js"></script>
+    <script defer src="logic.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#"
+        ><span class="brand-icon">P</span
+        ><span>Park <small>PREVIEW STUDIO</small></span></a
+      ><span class="local-badge">DEVELOPMENT ONLY</span
+      ><a
+        href="https://github.com/Yangston/youcantparkthere/actions/workflows/build.yml"
+        target="_blank"
+        rel="noreferrer"
+        >Open native CI ↗</a
+      >
+    </header>
+    <div class="layout">
+      <aside>
+        <p class="eyebrow">SCENARIO LIBRARY</p>
+        <h1>Every state.<br />Before your wrist.</h1>
+        <p class="muted">
+          Explore interactions, then review the actual watchOS renders.
+        </p>
+        <nav id="scenarios" aria-label="Preview scenarios"></nav>
+        <div class="sidebar-note">
+          Sample station data only.<br />No GPS, motion or Apple credentials.
+        </div>
+      </aside>
+      <main>
+        <div class="workspace-header">
+          <div>
+            <p class="eyebrow" id="scenario-group"></p>
+            <h2 id="scenario-title"></h2>
+            <p class="muted" id="scenario-description"></p>
+          </div>
+          <div class="mode-switch" role="group" aria-label="Preview type">
+            <button id="sandbox-mode" aria-pressed="true">
+              Interaction sandbox</button
+            ><button id="native-mode" aria-pressed="false">
+              Native captures
+            </button>
+          </div>
+        </div>
+        <section id="sandbox-panel" aria-label="Interaction sandbox">
+          <div class="notice">
+            <strong>Interaction sketch · not SwiftUI</strong
+            ><span
+              >This is an approximation for exploring behavior. SwiftUI edits
+              appear in native captures after CI, not automatically in this
+              sketch.</span
+            >
+          </div>
+          <div class="sandbox-grid">
+            <div class="stage">
+              <div class="stage-toolbar">
+                <label
+                  >Watch size
+                  <select id="watch-size">
+                    <option value="compact">Compact</option>
+                    <option value="large">Large</option>
+                  </select></label
+                ><button id="reset">Reset scenario ↺</button>
+              </div>
+              <div class="watch" id="watch">
+                <div class="watch-chrome">
+                  <span>PREVIEW</span><span>9:41</span>
+                </div>
+                <div id="watch-screen" class="watch-screen"></div>
+                <nav class="watch-tabs" aria-label="Watch pages">
+                  <button data-page="map" aria-label="Map">●</button
+                  ><button data-page="nearby" aria-label="Nearby list">●</button
+                  ><button data-page="settings" aria-label="Settings">●</button>
+                </nav>
+              </div>
+              <p class="stage-caption">
+                Click the controls in the watch. Scroll inside lists.
+              </p>
+            </div>
+            <div class="inspector">
+              <p class="eyebrow">STATE INSPECTOR</p>
+              <h3>What the app knows</h3>
+              <dl id="state"></dl>
+              <div class="legend">
+                <span><i class="green"></i>3+ available</span
+                ><span><i class="yellow"></i>1–2 available</span
+                ><span><i class="red"></i>Fresh zero</span
+                ><span><i class="gray"></i>Unknown / closed</span>
+              </div>
+              <p class="muted">
+                A failed request never means “full.” A cached map never makes
+                old counts fresh.
+              </p>
+              <div id="interaction-note" role="status"></div>
+            </div>
+          </div>
+        </section>
+        <section
+          id="native-panel"
+          aria-label="Native simulator captures"
+          hidden
+        >
+          <div class="notice native-notice">
+            <strong>Actual SwiftUI · watchOS Simulator</strong
+            ><span id="native-provenance"></span>
+          </div>
+          <div class="native-toolbar">
+            <a id="run-link" target="_blank" rel="noreferrer" hidden
+              >View source run ↗</a
+            ><label class="file-button"
+              >Load baseline folder<input
+                id="baseline"
+                type="file"
+                webkitdirectory
+                multiple /></label
+            ><button id="clear-baseline" hidden>Clear baseline</button
+            ><label
+              >Comparison
+              <select id="compare">
+                <option value="side">Side by side</option>
+                <option value="wipe">Wipe overlay</option>
+              </select></label
+            ><label id="wipe-control" hidden
+              >Reveal
+              <input id="wipe" type="range" min="0" max="100" value="50"
+            /></label>
+          </div>
+          <p id="baseline-note" class="muted" role="status">
+            Optional: select an extracted older preview folder for a visual
+            comparison.
+          </p>
+          <div id="native-stage" class="native-stage"></div>
+          <div id="native-empty" class="empty" hidden>
+            <span class="empty-icon">⌘</span>
+            <h3>No native capture for this state</h3>
+            <p>
+              Push a development branch and run <strong>Build and test</strong>.
+              Download <code>watch-preview-compact</code> or
+              <code>watch-preview-large</code>, then open its
+              <code>index.html</code>.
+            </p>
+            <p>To bring it into this studio:</p>
+            <code
+              >python scripts/dev.py import
+              path/to/watch-preview-compact.zip</code
+            >
+            <p class="muted">
+              An unpushed SwiftUI edit cannot run in Apple’s simulator on
+              Windows.
+            </p>
+          </div>
+          <div id="checks" class="checks"></div>
+        </section>
+        <footer>
+          <span id="capture-count"></span
+          ><span
+            >Simulator captures do not validate physical GPS, motion, battery,
+            haptics or complication delivery.</span
+          >
+        </footer>
+      </main>
+    </div>
+  </body>
 </html>

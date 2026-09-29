@@ -1,24 +1,216 @@
 {
   "schema": 1,
   "stations": [
-    {"id":"demo-0","name":"City Hall","latitude":43.6538,"longitude":-79.3841,"bikes":4,"docks":12,"installed":true,"renting":true,"returning":true},
-    {"id":"demo-1","name":"Queen / Bay","latitude":43.6511,"longitude":-79.3815,"bikes":9,"docks":0,"installed":true,"renting":true,"returning":true},
-    {"id":"demo-2","name":"Dundas / University","latitude":43.6546,"longitude":-79.389,"bikes":6,"docks":3,"installed":true,"renting":true,"returning":true},
-    {"id":"demo-3","name":"Yonge / Dundas","latitude":43.656,"longitude":-79.3802,"bikes":12,"docks":8,"installed":true,"renting":true,"returning":true}
+    {
+      "id": "demo-0",
+      "name": "City Hall",
+      "latitude": 43.6538,
+      "longitude": -79.3841,
+      "bikes": 4,
+      "docks": 12,
+      "installed": true,
+      "renting": true,
+      "returning": true
+    },
+    {
+      "id": "demo-1",
+      "name": "Queen / Bay",
+      "latitude": 43.6511,
+      "longitude": -79.3815,
+      "bikes": 9,
+      "docks": 0,
+      "installed": true,
+      "renting": true,
+      "returning": true
+    },
+    {
+      "id": "demo-2",
+      "name": "Dundas / University",
+      "latitude": 43.6546,
+      "longitude": -79.389,
+      "bikes": 6,
+      "docks": 3,
+      "installed": true,
+      "renting": true,
+      "returning": true
+    },
+    {
+      "id": "demo-3",
+      "name": "Yonge / Dundas",
+      "latitude": 43.656,
+      "longitude": -79.3802,
+      "bikes": 12,
+      "docks": 8,
+      "installed": true,
+      "renting": true,
+      "returning": true
+    }
   ],
   "scenarios": [
-    {"id":"docks","title":"Find a dock","group":"Everyday","page":"map","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"description":"Fresh availability, including a genuinely full station."},
-    {"id":"bikes","title":"Find a bike","group":"Everyday","page":"map","mode":"bikes","riding":false,"age":0,"data":true,"gps":true,"description":"The same stations in bike mode."},
-    {"id":"ride","title":"Active ride","group":"Everyday","page":"map","mode":"docks","riding":true,"target":"demo-0","age":0,"data":true,"gps":true,"description":"An explicit navigation session with a destination."},
-    {"id":"nearby","title":"Nearby list","group":"Screens","page":"nearby","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"description":"Available stations ranked by straight-line distance."},
-    {"id":"station","title":"Station details","group":"Screens","page":"detail","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"description":"Inventory, favorite and destination actions."},
-    {"id":"settings","title":"Ride & settings","group":"Screens","page":"settings","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"description":"Cycling is opt-in; manual Ride and End remain available."},
-    {"id":"onboarding","title":"First launch","group":"Screens","page":"onboarding","mode":"docks","riding":false,"age":0,"data":true,"gps":false,"description":"The actual onboarding content without a system permission prompt."},
-    {"id":"stale","title":"Stale inventory","group":"Failures","page":"map","mode":"docks","riding":false,"age":600,"data":true,"gps":true,"description":"Ten-minute-old inventory must appear unknown, never as fresh counts."},
-    {"id":"offline","title":"Offline with cache","group":"Failures","page":"map","mode":"docks","riding":false,"age":600,"data":true,"gps":false,"error":"Offline / feed unavailable. Check the timestamps before riding to a station.","description":"Cached station locations remain visible; inventory is unknown."},
-    {"id":"unavailable","title":"Closed & unknown","group":"Failures","page":"map","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"overrides":{"demo-0":{"returning":false},"demo-2":{"docks":null}},"description":"Closed and missing-count stations are gray. Fresh zero stays red."},
-    {"id":"empty","title":"Empty feed","group":"Failures","page":"nearby","mode":"docks","riding":false,"age":0,"data":true,"empty":true,"gps":true,"description":"A valid feed with no stations is not a network failure."},
-    {"id":"error","title":"No data / error","group":"Failures","page":"map","mode":"docks","riding":false,"age":0,"data":false,"gps":false,"error":"Couldn't load stations. Check your connection and retry.","description":"No station data, a clear error and a retry action."},
-    {"id":"large-text","title":"Large text","group":"Accessibility","page":"nearby","mode":"docks","riding":false,"age":0,"data":true,"gps":true,"largeText":true,"description":"Nearby list at accessibility text size. Inspect native wrapping and clipping."}
+    {
+      "id": "docks",
+      "title": "Find a dock",
+      "group": "Everyday",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Fresh availability, including a genuinely full station."
+    },
+    {
+      "id": "bikes",
+      "title": "Find a bike",
+      "group": "Everyday",
+      "page": "map",
+      "mode": "bikes",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "The same stations in bike mode."
+    },
+    {
+      "id": "ride",
+      "title": "Active ride",
+      "group": "Everyday",
+      "page": "map",
+      "mode": "docks",
+      "riding": true,
+      "target": "demo-0",
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "An explicit navigation session with a destination."
+    },
+    {
+      "id": "nearby",
+      "title": "Nearby list",
+      "group": "Screens",
+      "page": "nearby",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Available stations ranked by straight-line distance."
+    },
+    {
+      "id": "station",
+      "title": "Station details",
+      "group": "Screens",
+      "page": "detail",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Inventory, favorite and destination actions."
+    },
+    {
+      "id": "settings",
+      "title": "Ride & settings",
+      "group": "Screens",
+      "page": "settings",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Cycling is opt-in; manual Ride and End remain available."
+    },
+    {
+      "id": "onboarding",
+      "title": "First launch",
+      "group": "Screens",
+      "page": "onboarding",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": false,
+      "description": "The actual onboarding content without a system permission prompt."
+    },
+    {
+      "id": "stale",
+      "title": "Stale inventory",
+      "group": "Failures",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 600,
+      "data": true,
+      "gps": true,
+      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts."
+    },
+    {
+      "id": "offline",
+      "title": "Offline with cache",
+      "group": "Failures",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 600,
+      "data": true,
+      "gps": false,
+      "error": "Offline / feed unavailable. Check the timestamps before riding to a station.",
+      "description": "Cached station locations remain visible; inventory is unknown."
+    },
+    {
+      "id": "unavailable",
+      "title": "Closed & unknown",
+      "group": "Failures",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "overrides": {
+        "demo-0": { "returning": false },
+        "demo-2": { "docks": null }
+      },
+      "description": "Closed and missing-count stations are gray. Fresh zero stays red."
+    },
+    {
+      "id": "empty",
+      "title": "Empty feed",
+      "group": "Failures",
+      "page": "nearby",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "empty": true,
+      "gps": true,
+      "description": "A valid feed with no stations is not a network failure."
+    },
+    {
+      "id": "error",
+      "title": "No data / error",
+      "group": "Failures",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": false,
+      "gps": false,
+      "error": "Couldn't load stations. Check your connection and retry.",
+      "description": "No station data, a clear error and a retry action."
+    },
+    {
+      "id": "large-text",
+      "title": "Large text",
+      "group": "Accessibility",
+      "page": "nearby",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "largeText": true,
+      "description": "Nearby list at accessibility text size. Inspect native wrapping and clipping."
+    }
   ]
 }

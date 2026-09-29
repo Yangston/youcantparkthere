@@ -23,7 +23,7 @@ enum SimulatorPreview {
             }
             current = scenario
             let date = model.now.addingTimeInterval(-scenario.age)
-            let stations = scenario.empty == true ? [] : catalog.stations.map { sample in
+            let stations: [Station] = scenario.empty == true ? [] : catalog.stations.map { sample in
                 let override = scenario.overrides?[sample.id]
                 return Station(id: sample.id, name: sample.name,
                     coordinate: Coordinate(latitude: sample.latitude, longitude: sample.longitude),
