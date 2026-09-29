@@ -12,6 +12,8 @@ WatchApp/Assets.xcassets/
 .env.*
 *.p12
 *.p8
+*.pem
+*.key
 *.mobileprovision
 *.ipa
 *.xcarchive/

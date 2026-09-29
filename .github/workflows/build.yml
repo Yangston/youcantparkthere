@@ -26,6 +26,7 @@ jobs:
           swift test 2>&1 | tee build/tests.log
       - name: Generate app assets and project
         run: |
+          python3 -m py_compile scripts/*.py
           python3 scripts/make_assets.py
           xcodegen generate
       - name: Build watch simulator and widgets
@@ -49,23 +50,28 @@ jobs:
         run: |
           set -o pipefail
           swift run ParkFeedCheck 2>&1 | tee build/live-feed.log
-      - name: Publish compiler errors as annotations
+      - name: Launch simulator and exercise deep links
+        run: |
+          set -o pipefail
+          python3 scripts/simulator_smoke.py 2>&1 | tee build/simulator-smoke.log
+      - name: Publish errors as annotations
         if: failure()
         run: |
           python3 - <<'PY'
           from pathlib import Path
           for path in Path('build').glob('*.log'):
               for line in path.read_text(errors='replace').splitlines():
-                  if 'error:' in line.lower():
+                  if 'error:' in line.lower() or 'error(' in line.lower():
                       print('::error::' + line.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
           PY
-      - name: Save logs and simulator app
+      - name: Save logs, screenshots, and simulator app
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: watch-build
           path: |
             build/*.log
+            build/*.png
             build/DerivedData/Build/Products/Debug-watchsimulator/*.app
           if-no-files-found: ignore
           retention-days: 14

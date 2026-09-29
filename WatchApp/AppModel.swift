@@ -91,19 +91,20 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         ridingSince = Date(); mode = .docks; tab = 0
         detector.reset()
-        WKExtension.shared().isFrontmostTimeoutExtended = true
+        // Actual background navigation is configured below. watchOS 7+ ignores
+        // the deprecated frontmost-timeout override; Return to Clock is user controlled.
         WKInterfaceDevice.current().play(.start)
         configureServices()
     }
     func stopRide() {
         ridingSince = nil; pendingRide = false; detector.suppress(at: Date())
         arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor()
-        WKExtension.shared().isFrontmostTimeoutExtended = false
         WKInterfaceDevice.current().play(.stop)
         configureServices()
     }
     func tick() {
         now = Date()
+        if isDemo { loadDemo() } // Keep explicit demo fixtures usable; never persist them as live data.
         if autoDetect && !riding && active && detector.shouldStart(at: now) { startRide() }
         if let since = ridingSince, now.timeIntervalSince(since) > 5_400 {
             stopRide(); error = "Ride mode stopped after 90 minutes to save battery. Start it again to continue."
