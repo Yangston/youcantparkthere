@@ -8,6 +8,21 @@ This guide assumes you have **never made an iOS or watchOS app**. Follow it in o
 
 Guide updated: **29 September 2026**. Apple/GitHub screen labels can change; official references are linked at the relevant steps. Physical-device behavior and your account's first signed upload still require validation.
 
+## Current setup status
+
+Verified on **29 September 2026** for this repository:
+
+- [Build and test on `main`](https://github.com/Yangston/youcantparkthere/actions/runs/36624085080) passed for commit `c49d7d0`.
+- Apple Developer membership is active and the program agreements are accepted. All three bundle identifiers and the matching root App Store Connect app record are present.
+- The supplied API key matches the active **Team Key** with **App Manager** access. Its issuer/key identifiers match the local configuration.
+- The GitHub `testflight` environment contains all **four secrets** and **three variables** required below. Saved variable values were checked against the supplied configuration and Team ID. Deployment is restricted to the `main` branch, with no tags allowed.
+- A separate distribution signing private key was generated and saved as `CERTIFICATE_PRIVATE_KEY`. Both local private keys passed OpenSSL validation, and the supplied settings passed `scripts/check_signing.py`. GitHub does not reveal saved secret values; successful Apple signing is still unverified.
+- TestFlight currently shows **No Builds**, and no internal testing group is configured. No physical-device tests have been run.
+
+**Next: start at [stage 8](#8-run-the-testflight-upload)**, then complete stages 9–11. The first signed upload retrieves or creates the distribution certificate and provisioning profiles. Do not repeat enrollment, identifier registration, or key generation for this setup.
+
+The Windows automated setup helper, its tests/workflow, and its separate guide have been removed. This guide and the manual **Upload to TestFlight** workflow remain the supported path. Local `.p8`, `.pem`, and `testflight-settings.json` files are ignored by Git; keep private backups outside the repository and never force-add them. No credential values belong in this guide.
+
 ## Your path through the guide
 
 | Stage | Do this where? | Result |
@@ -365,11 +380,11 @@ You normally keep the existing membership, three bundle identifiers, app record,
 
 ### Final checklist
 
-- [ ] Newest code checks reviewed; simulator checks are not confused with device testing.
-- [ ] Apple membership active and correct team selected.
-- [ ] Three bundle identifiers registered; one root app record created.
-- [ ] Team API key and separate distribution private key stored securely.
-- [ ] Four environment secrets and three environment variables saved in this repo.
+- [x] Code checks for `c49d7d0` reviewed; simulator checks are not confused with device testing. Recheck CI after subsequent code changes.
+- [x] Apple membership active and correct team selected.
+- [x] Three bundle identifiers registered; one root app record created.
+- [x] Team API key and separate distribution private key stored as protected environment secrets.
+- [x] Four environment secrets and three environment variables saved in this repo; `main`-only deployment rule verified.
 - [ ] Manual TestFlight upload succeeded and Apple processed the build.
 - [ ] Internal group has both my tester account and the build.
 - [ ] App installed on the Watch through the paired iPhone's TestFlight.
