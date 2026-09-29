@@ -1,0 +1,17 @@
+.build/
+build/
+DerivedData/
+Generated/
+*.xcodeproj/
+*.xcworkspace/
+.swiftpm/
+.DS_Store
+PhoneApp/Assets.xcassets/
+WatchApp/Assets.xcassets/
+.env
+.env.*
+*.p12
+*.p8
+*.mobileprovision
+*.ipa
+*.xcarchive/
