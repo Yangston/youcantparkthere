@@ -4,6 +4,10 @@
 
 A watch-first Bike Share Toronto app: find an empty dock without pulling out your phone.
 
+**New to Apple app development? Start with [the complete Windows-to-Watch setup walkthrough](docs/SETUP.md).** It explains each portal, the exact fields to fill in, both private keys, and TestFlight installation. No local Mac or Xcode installation is needed for that workflow.
+
+**Seeing old red builds? Read [what failed and what CI actually verifies](docs/CI_NOTES.md).** Build checks, Apple signing, and real-device testing are three separate milestones.
+
 **v0.1 implementation.** SwiftUI watch app, WidgetKit complications, native location/motion integration, public GBFS client, tests, and cloud builds. Physical-watch behavior and signed TestFlight distribution still need device/account validation. The CI badge is the current build status, not a claim of road testing.
 
 ## The experience
@@ -45,6 +49,7 @@ Requirements for native builds: Xcode with watchOS SDK, XcodeGen 2.42+, Python 3
 
 ```sh
 swift test                         # deterministic, no network
+python3 -m unittest discover -s scripts/tests -v
 swift run ParkFeedCheck             # optional live operator check
 python3 scripts/make_assets.py
 xcodegen generate
@@ -53,20 +58,21 @@ xcodebuild -project YouCantParkThere.xcodeproj -scheme ParkWatch \
   CODE_SIGNING_ALLOWED=NO build
 ```
 
-Launch the watch app with `--demo` for clearly labeled sample stations. Demo data is never a fallback for a failed live request.
+Launch the watch app with `--demo` for clearly labeled sample stations. Demo data is never a fallback for a failed live request. The CI-only route hook is compiled only for Debug simulator builds; see [CI notes](docs/CI_NOTES.md) for its coverage boundary.
 
 ## Repository
 
 ```text
-Sources/ParkCore/       GBFS decoder/client, distance/filtering, ride and alert state machines
-Tests/ParkCoreTests/    Malformed/stale/closed/full feeds, geometry, cache/TTL, motion, alerts
+Sources/ParkCore/       GBFS decoder/client, distance/filtering, ride/alert state machines, URL routes
+Tests/ParkCoreTests/    Malformed/stale/closed/full feeds, geometry, cache/TTL, motion, alerts, routes
 Sources/ParkFeedCheck/  Live feed diagnostic
 WatchApp/              SwiftUI map/list/detail/settings, GPS, ride session, intents, privacy manifest
 Widgets/               Watch-face and Smart Stack launchers
 project.yml            Reproducible XcodeGen project; watch + widgets + watch-only iOS packaging
 .github/workflows/     Unsigned CI and manual signed TestFlight upload
-scripts/               Asset generation, signing preflight, archive structure checks
-docs/                  Setup, architecture/platform constraints, physical-device test checklist
+scripts/               Asset generation, signing preflight, archive checks, simulator state assertions
+scripts/tests/         Regression tests for the CI helper code
+docs/                  Beginner setup, CI notes, architecture, physical-device test checklist
 ```
 
 ## Data and platform references
