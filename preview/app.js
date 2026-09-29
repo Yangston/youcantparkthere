@@ -242,9 +242,18 @@
   const captured = report.entries.filter((e) => e.status === "captured").length;
   $("capture-count").textContent =
     `${captured} / ${fixtures.scenarios.length} native states captured`;
-  $("native-provenance").textContent = report.capturedAt
-    ? `${report.device} · ${report.runtime} · commit ${report.sha.slice(0, 7)} · ${report.branch} · ${report.capturedAt}`
-    : "No native build imported. The sandbox is available immediately.";
+  $("native-provenance").textContent =
+    report.capturedAt || report.runURL
+      ? [
+          report.device,
+          report.runtime,
+          `commit ${report.sha.slice(0, 7)}`,
+          report.branch,
+          report.capturedAt || "No screenshots produced",
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : "No native build imported. The sandbox is available immediately.";
   if (
     report.runURL &&
     /^https:\/\/github\.com\/Yangston\/youcantparkthere\/actions\/runs\/\d+$/.test(
@@ -335,6 +344,32 @@
   $("clear-baseline").onclick = clearBaseline;
   $("compare").onchange = renderNative;
   $("wipe").oninput = renderNative;
+  $("saved-baseline").hidden = !window.PARK_DATA.baseline;
+  $("saved-baseline").onclick = () => {
+    const old = window.PARK_DATA.baseline;
+    if (old.device !== report.device || old.runtime !== report.runtime) {
+      noteBaseline(
+        "Saved baseline uses a different Watch model/runtime. Import a matching baseline ZIP.",
+      );
+      return;
+    }
+    clearBaseline();
+    const images = new Map(
+      old.entries
+        .filter(
+          (e) =>
+            e.status === "captured" &&
+            /^screenshots\/[a-z0-9-]+\.png$/.test(e.file || ""),
+        )
+        .map((e) => [e.id, `baseline/${e.file}`]),
+    );
+    baseline = { sha: old.sha, images };
+    $("clear-baseline").hidden = false;
+    noteBaseline(
+      `Saved baseline ${old.sha.slice(0, 7)} · ${old.device}. Map tiles and clock can vary.`,
+    );
+    renderNative();
+  };
   $("baseline").onchange = async (event) => {
     try {
       const files = [...event.target.files],

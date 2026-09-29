@@ -92,7 +92,7 @@ class PreviewHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = unquote(urlsplit(self.path).path).lstrip('/') or 'index.html'
         allowed = {*ASSETS, 'manifest.json', 'report.js'}
-        if path not in allowed and not re.fullmatch(r'screenshots/[a-z0-9-]+\.png', path):
+        if path not in allowed and not re.fullmatch(r'(?:baseline/)?screenshots/[a-z0-9-]+\.png', path):
             self.send_error(404)
             return
         if not (Path(self.directory) / path).resolve().is_relative_to(Path(self.directory).resolve()):
@@ -119,6 +119,8 @@ def main():
     serve.add_argument('--port', type=int, default=8765)
     load = commands.add_parser('import', help='Import a downloaded watch-preview-*.zip artifact')
     load.add_argument('archive', type=Path)
+    baseline = commands.add_parser('baseline', help='Save an older preview ZIP for comparison without a browser folder picker')
+    baseline.add_argument('archive', type=Path)
     capture = commands.add_parser('capture', help='Manually run unsigned CI for an already-pushed branch')
     capture.add_argument('--ref', required=True)
     fetch = commands.add_parser('fetch', help='Download a completed native preview with GitHub CLI')
@@ -135,6 +137,12 @@ def main():
     elif args.command == 'import':
         result = import_zip(args.archive)
         print(f"Imported {result['sha'][:7]} / {result['device']}. Run: python scripts/dev.py preview")
+    elif args.command == 'baseline':
+        if not (OUTPUT / 'manifest.json').exists(): build_report()
+        result = import_zip(args.archive, OUTPUT / 'baseline')
+        current = json.loads((OUTPUT / 'manifest.json').read_text(encoding='utf-8'))
+        write_viewer(OUTPUT, current)
+        print(f"Saved baseline {result['sha'][:7]} / {result['device']}. Refresh the studio and select Use saved baseline.")
     elif args.command == 'capture':
         if not args.ref or args.ref.startswith('-'): raise ValueError('Invalid branch name')
         print(gh('workflow', 'run', 'build.yml', '--repo', REPO, '--ref', args.ref))

@@ -32,7 +32,7 @@ No Apple keys are required for previews. No push or PR automatically uploads to 
 ## App behavior
 
 - **Park / Bikes:** map markers and a list ordered by straight-line distance.
-- **Availability:** green = 3+, yellow = 1?2, red = fresh zero, gray = unknown or unavailable. Stale counts are never shown as fresh inventory.
+- **Availability:** green = 3+, yellow = 1-2, red = fresh zero, gray = unknown or unavailable. Stale counts are never shown as fresh inventory.
 - **Ride:** explicit start/end, background navigation location, 90-minute cutoff and five-minute automatic-restart suppression after ending.
 - **Cycling detection:** opt-in, only while the app is executing. It cannot launch a closed app.
 - **Destinations:** proximity and newly-full warnings; neither reserves a dock nor confirms a successful return.
@@ -53,4 +53,4 @@ No Apple keys are required for previews. No push or PR automatically uploads to 
 | `project.yml` | XcodeGen source of truth; generated projects stay ignored |
 | `.github/workflows/` | Unsigned validation/preview and separate manual signed distribution |
 
-Data: Bike Share Toronto / Toronto Parking Authority. Unofficial app; not affiliated with the operator. Recheck attribution and licensing before a public release. [GBFS discovery](https://toronto.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) ? [GBFS specification](https://gbfs.org/documentation/).
+Data: Bike Share Toronto / Toronto Parking Authority. Unofficial app; not affiliated with the operator. Recheck attribution and licensing before a public release. [GBFS discovery](https://toronto.publicbikesystem.net/customer/gbfs/v3.0/gbfs.json) | [GBFS specification](https://gbfs.org/documentation/).

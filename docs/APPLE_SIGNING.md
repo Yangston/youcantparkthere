@@ -10,15 +10,15 @@ The account, identifiers, app record and GitHub environment are already configur
 | ParkWatch | `com.yangston.youcantparkthere.watchkitapp` | Actual native watchOS app |
 | ParkWidgets | `com.yangston.youcantparkthere.watchkitapp.widgets` | Watch-face / Smart Stack launchers |
 
-All three explicit identifiers belong to the same Apple team. App Store Connect has **one iOS app record**, using the root bundle identifier?even though this is a watch-only app. Its numeric Apple ID is **6817489933**. The chosen root must match `BUNDLE_ID`; child identifiers retain both suffixes.
+All three explicit identifiers belong to the same Apple team. App Store Connect has **one iOS app record**, using the root bundle identifier, even though this is a watch-only app. Its numeric Apple ID is **6817489933**. The chosen root must match `BUNDLE_ID`; child identifiers retain both suffixes.
 
-Apple Developer ? Account manages membership, team, agreements, identifiers, certificates and profiles. App Store Connect manages the app record, API team keys, uploaded builds, TestFlight groups and testers. When there are multiple teams, select the same one in both sites.
+Apple Developer > Account manages membership, team, agreements, identifiers, certificates and profiles. App Store Connect manages the app record, API team keys, uploaded builds, TestFlight groups and testers. When there are multiple teams, select the same one in both sites.
 
 ## Two different private keys
 
 | Material | What it does | Source / lifecycle |
 |---|---|---|
-| API private key `.p8` | Authenticates the CI signing/upload tools to App Store Connect | Downloaded once from Users and Access ? Integrations ? App Store Connect API ? **Team Keys**. Keep the original backup. |
+| API private key `.p8` | Authenticates the CI signing/upload tools to App Store Connect | Downloaded once from Users and Access > Integrations > App Store Connect API > **Team Keys**. Keep the original backup. |
 | Distribution private key `.pem` | Matches the Apple Distribution certificate used to sign the binary | Generated locally with OpenSSL. The signing workflow retrieves/creates the matching certificate and provisioning profiles. Reuse it across updates. |
 
 They are not interchangeable. A `.cer` certificate alone is not the distribution private key. Keep the full PEM text, with BEGIN/END lines and actual line breaks. A filename, base64 wrapper, Apple Account password, app-specific password, or two-factor code is not the requested value.
@@ -27,7 +27,7 @@ Use a **Team Key** with **App Manager** access for this workflow. Individual API
 
 ## GitHub's protected `testflight` environment
 
-Repository ? Settings ? Environments ? `testflight`. Deployment branch rules allow only branch `main`, with no tags. Signing material belongs exclusively in this environment's secrets, not source files or ordinary variables.
+Repository > Settings > Environments > `testflight`. Deployment branch rules allow only branch `main`, with no tags. Signing material belongs exclusively in this environment's secrets, not source files or ordinary variables.
 
 | Environment entry | Kind | Value |
 |---|---|---|
@@ -59,4 +59,4 @@ Apple rejected build 1.1 with **ITMS-90683** because `ParkContainer.app` lacked 
 
 A green upload only means delivery succeeded. Apple processing can reject it afterward; verify the build in TestFlight. Build 2.1 was processed successfully after the container string was added. No extra permission capability or new key was needed for that fix.
 
-Apple references: [App records](https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app) ? [API team keys](https://developer.apple.com/help/app-store-connect/get-started/app-store-connect-api/) ? [Key restrictions](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api) ? [Internal testers](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers) ? [TestFlight installation](https://testflight.apple.com/).
+Apple references: [App records](https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app) | [API team keys](https://developer.apple.com/help/app-store-connect/get-started/app-store-connect-api/) | [Key restrictions](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api) | [Internal testers](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers) | [TestFlight installation](https://testflight.apple.com/).

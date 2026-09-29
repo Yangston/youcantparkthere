@@ -28,7 +28,7 @@ The shared scenario catalog is `preview/fixtures.json`. Sample data is intention
 
 ## Get native previews before a Watch update
 
-Push your feature branch and open a PR. **Build and test** runs automatically on PRs and pushes to `main`. For a pushed branch without a PR, use Actions ? Build and test ? Run workflow and select that branch.
+Push your feature branch and open a PR. **Build and test** runs automatically on PRs and pushes to `main`. For a pushed branch without a PR, use Actions > Build and test > Run workflow and select that branch.
 
 Optional GitHub CLI shortcuts, after `gh auth login`:
 
@@ -51,8 +51,14 @@ python scripts/dev.py import C:\path\to\watch-preview-compact.zip
 ```
 
 4. Refresh the local studio. Check the displayed **commit, branch, Watch model, runtime and capture time**. A capture from an older commit does not verify your current edit.
-5. Select each changed screen/state. Missing screenshots and failed state assertions are explicitly shown as missing/failed, never as a passed preview.
-6. To compare, select **Load baseline folder** and choose an extracted older report folder. Use side-by-side or wipe overlay. Baselines must use the same Watch model/runtime. Map tiles, OS clock and rendering can vary; this is a visual review, not an automated pixel-diff pass.
+5. Select each changed screen/state. Native images are static viewport captures; scrollable pages show the captured viewport, not an interactive simulator. Missing screenshots and failed state assertions are explicitly shown as missing/failed, never as a passed preview.
+6. To save a repeatable comparison without a browser folder picker:
+
+```powershell
+python scripts/dev.py baseline C:\path\to\older-watch-preview-compact.zip
+```
+
+Refresh and select **Use saved baseline**. Alternatively, select **Load baseline folder** and choose an extracted older report folder. Use side-by-side or wipe overlay. Baselines must use the same Watch model/runtime. Map tiles, OS clock and rendering can vary; this is a visual review, not an automated pixel-diff pass.
 
 Artifacts expire after 30 days. Keep an extracted known-good preview outside the repository for longer-lived baselines. The simulator `.app` cannot be installed on a physical Watch.
 
@@ -60,7 +66,7 @@ Artifacts expire after 30 days. Keep an extracted known-good preview outside the
 
 - **Windows tooling job:** Python helper/import/report/release-gate tests and JS freshness/filter semantics.
 - **Two native jobs:** compact and large Watch devices selected from the newest available runtime. Actual model/runtime names are recorded rather than guessed.
-- **Each native job:** helper tests ? `swift test` ? assets/XcodeGen ? Watch + widgets compilation ? unsigned archive validation ? optional live feed diagnostic ? paired-simulator route assertions ? 13 scenario state assertions/screenshots ? offline preview report.
+- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 13 scenario state assertions/screenshots > offline preview report.
 - **Partial failures:** available screenshots and logs are still uploaded, with failed/missing states visible. CI remains red when any required step fails.
 - **Live feed:** remote outages are diagnostic and do not masquerade as deterministic test failures.
 - **Signed distribution:** a separate manual workflow restricted to `main` and the protected `testflight` environment. It requires green unsigned CI for the exact commit. See RELEASING.md.

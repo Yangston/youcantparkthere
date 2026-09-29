@@ -4,7 +4,7 @@ Status: **installation and initial launch confirmed by Stone on 29 September 202
 
 | Test | Expected result | Result |
 |---|---|---|
-| Install and initial launch | Native app installs and opens on the physical Watch. | Passed ? user report, 29 September 2026; build/model/OS not supplied |
+| Install and initial launch | Native app installs and opens on the physical Watch. | Passed - user report, 29 September 2026; build/model/OS not supplied |
 | Cold launch, Internet available | Real station names and timestamp, no sample data. | Not run |
 | Deny location | Explicit downtown/no-GPS label; station browsing still works. | Not run |
 | Grant location, fresh GPS | Nearby stations follow position; distances explicitly straight-line. | Not run |

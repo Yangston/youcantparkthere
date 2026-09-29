@@ -46,7 +46,11 @@ def write_viewer(output, manifest):
     for name in ASSETS:
         shutil.copyfile(ROOT / 'preview' / name, output / name)
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
-    payload = json.dumps({'report': manifest, 'fixtures': catalog()}, ensure_ascii=True).replace('<', '\\u003c')
+    baseline_path = output / 'baseline/manifest.json'
+    baseline = None
+    if baseline_path.is_file() and baseline_path.resolve().is_relative_to(output.resolve()):
+        baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+    payload = json.dumps({'report': manifest, 'fixtures': catalog(), 'baseline': baseline}, ensure_ascii=True).replace('<', '\\u003c')
     (output / 'report.js').write_text('window.PARK_DATA = ' + payload + ';\n', encoding='utf-8')
 
 

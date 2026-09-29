@@ -73,5 +73,17 @@ class PreviewTests(unittest.TestCase):
             preview_report.write_viewer(directory, {'branch': '</script><script>alert(1)</script>'})
             self.assertNotIn('</script>', (Path(directory) / 'report.js').read_text())
 
+    def test_saved_baseline_is_embedded_without_replacing_current_provenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'baseline').mkdir()
+            old = {'schema': 1, 'sha': 'b' * 40, 'entries': []}
+            (root / 'baseline/manifest.json').write_text(json.dumps(old))
+            preview_report.write_viewer(root, {'schema': 1, 'sha': 'a' * 40, 'entries': []})
+            payload = (root / 'report.js').read_text()[len('window.PARK_DATA = '):].rstrip(';\n')
+            data = json.loads(payload)
+            self.assertEqual(data['report']['sha'], 'a' * 40)
+            self.assertEqual(data['baseline']['sha'], 'b' * 40)
+
 
 if __name__ == '__main__': unittest.main()
