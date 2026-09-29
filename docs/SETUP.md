@@ -12,14 +12,14 @@ Guide updated: **29 September 2026**. Apple/GitHub screen labels can change; off
 
 Verified on **29 September 2026** for this repository:
 
-- [Build and test on `main`](https://github.com/Yangston/youcantparkthere/actions/runs/36630955351) passed for commit `c0184b5`. Recheck CI for the privacy-string fix before uploading again.
+- [Build and test on `main`](https://github.com/Yangston/youcantparkthere/actions/runs/36631875879) passed for the privacy-string fix, commit `336fa37`, on its second attempt: 31 Swift tests, nine Python tests, native compilation, archive validation, live-feed diagnostic, and paired-simulator routing. The first attempt passed compilation/archive validation but timed out in `simctl list devices` before launching the app; the unchanged retry passed.
 - Apple Developer membership is active and the program agreements are accepted. All three bundle identifiers and the matching root App Store Connect app record are present.
 - The supplied API key matches the active **Team Key** with **App Manager** access. Its issuer/key identifiers match the local configuration.
 - The GitHub `testflight` environment contains all **four secrets** and **three variables** required below. Saved variable values were checked against the supplied configuration and Team ID. Deployment is restricted to the `main` branch, with no tags allowed.
 - A separate distribution signing private key was generated and saved as `CERTIFICATE_PRIVATE_KEY`. Both local private keys passed OpenSSL validation, and the supplied settings passed `scripts/check_signing.py`. The [first signed upload](https://github.com/Yangston/youcantparkthere/actions/runs/36630970205) succeeded, but Apple subsequently rejected build **1.1** with **ITMS-90683** because `ParkContainer.app` lacked `NSMotionUsageDescription`.
-- The container purpose string is now defined in `project.yml`, and `scripts/check_archive.py` rejects an archive without it before export/upload. Apple processing must succeed for a replacement build before installation. No physical-device tests have been run.
+- The container purpose string is now defined in `project.yml`, and `scripts/check_archive.py` rejects an archive without it before export/upload. The [replacement upload](https://github.com/Yangston/youcantparkthere/actions/runs/36632706870) succeeded for version **0.1.0**, build **2.1**. App Store Connect shows its upload as **Complete** and its build status as **Ready to Submit**. Build 1.1 remains Failed. No physical-device tests have been run.
 
-**Next: start a new run at [stage 8](#8-run-the-testflight-upload)** on the corrected `main` commit, then complete stages 9–11. A new workflow run generates a new build number; rerunning the old commit would upload the old configuration. Do not repeat enrollment, identifier registration, or key generation for this setup.
+**Next: start at [stage 9](#9-make-the-build-available-to-yourself)**. Create an internal testing group and add yourself and build **2.1**, then complete stages 10–11. No internal testing group was present when the processed build was verified. Do not repeat enrollment, identifier registration, key generation, or upload this unchanged build again.
 
 The Windows automated setup helper, its tests/workflow, and its separate guide have been removed. This guide and the manual **Upload to TestFlight** workflow remain the supported path. Local `.p8`, `.pem`, and `testflight-settings.json` files are ignored by Git; keep private backups outside the repository and never force-add them. No credential values belong in this guide.
 
@@ -380,12 +380,12 @@ You normally keep the existing membership, three bundle identifiers, app record,
 
 ### Final checklist
 
-- [x] Code checks for `c49d7d0` reviewed; simulator checks are not confused with device testing. Recheck CI after subsequent code changes.
+- [x] Code checks for `336fa37` reviewed; simulator checks are not confused with device testing. Recheck CI after subsequent code changes.
 - [x] Apple membership active and correct team selected.
 - [x] Three bundle identifiers registered; one root app record created.
 - [x] Team API key and separate distribution private key stored as protected environment secrets.
 - [x] Four environment secrets and three environment variables saved in this repo; `main`-only deployment rule verified.
-- [ ] Manual TestFlight upload succeeded and Apple processed the build.
+- [x] Manual TestFlight upload succeeded and Apple processed build 2.1 (Complete / Ready to Submit).
 - [ ] Internal group has both my tester account and the build.
 - [ ] App installed on the Watch through the paired iPhone's TestFlight.
 - [ ] Real complication taps, permissions, and Ride/End checked; remaining device tests recorded honestly.
