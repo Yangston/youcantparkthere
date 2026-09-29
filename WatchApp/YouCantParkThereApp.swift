@@ -33,7 +33,7 @@ struct FindDocksIntent: AppIntent {
     static var title: LocalizedStringResource = "Find Bike Share Docks"
     static var openAppWhenRun = true
     @MainActor func perform() async throws -> some IntentResult {
-        AppModel.shared.mode = .docks; AppModel.shared.tab = 0
+        AppModel.shared.mode = .docks; AppModel.shared.sheet = nil
         return .result()
     }
 }

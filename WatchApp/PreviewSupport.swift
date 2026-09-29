@@ -29,21 +29,21 @@ enum SimulatorPreview {
                     coordinate: Coordinate(latitude: sample.latitude, longitude: sample.longitude),
                     bikes: sample.bikes, docks: override?.missingDocks == true ? nil : sample.docks,
                     installed: sample.installed, renting: sample.renting,
-                    returning: override?.returning ?? sample.returning, reportedAt: date)
+                    returning: override?.returning ?? sample.returning, reportedAt: date,
+                    electricBikes: override?.missingElectricBikes == true ? nil : sample.electricBikes)
             }
             model.snapshot = scenario.data ? StationSnapshot(stations: stations, updatedAt: date, fetchedAt: date) : nil
             model.origin = scenario.gps ? .toronto : nil
             model.locationDate = scenario.gps ? model.now : nil
             model.mode = scenario.mode == "bikes" ? .bikes : .docks
-            model.tab = scenario.page == "nearby" ? 1 : scenario.page == "settings" ? 2 : 0
+            model.bikeFilter = scenario.bikeFilter == "electric" ? .electric : .all
+            model.sheet = scenario.page == "settings" ? .settings : scenario.page == "detail" ? .station("demo-0") : nil
             model.ridingSince = scenario.riding ? model.now.addingTimeInterval(-300) : nil
             model.targetID = scenario.target
             model.error = scenario.error
             model.favorites = []
             // Isolate simulator defaults so previous runs cannot change screenshots.
             UserDefaults.standard.set(false, forKey: "autoDetect")
-            UserDefaults.standard.set(false, forKey: "showUnavailable")
-            UserDefaults.standard.set(1, forKey: "minimumDocks")
             UserDefaults.standard.set(true, forKey: "onboarded")
         } catch {
             model.error = "Preview fixture failed: \(error)"
@@ -61,7 +61,8 @@ enum SimulatorPreview {
         } ?? []
         let value: [String: Any] = [
             "scenario": scenario.id, "demo": model.isDemo, "mode": model.mode.rawValue,
-            "riding": model.riding, "tab": model.tab, "counts": counts
+            "riding": model.riding, "screen": model.sheet?.screen ?? "map", "counts": counts,
+            "bikeFilter": model.bikeFilter.rawValue
         ]
         do {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -90,21 +91,25 @@ enum SimulatorPreview {
     private struct Sample: Decodable {
         let id: String; let name: String; let latitude: Double; let longitude: Double
         let bikes: Int?; let docks: Int?; let installed: Bool; let renting: Bool; let returning: Bool
+        let electricBikes: Int?
     }
     struct Scenario: Decodable {
         let id: String; let page: String; let mode: String; let riding: Bool
         let age: Double; let data: Bool; let gps: Bool
         let target: String?; let error: String?; let empty: Bool?; let largeText: Bool?
+        let bikeFilter: String?
         let overrides: [String: Override]?
     }
     struct Override: Decodable {
         let returning: Bool?
         let missingDocks: Bool
-        enum CodingKeys: String, CodingKey { case returning, docks }
+        let missingElectricBikes: Bool
+        enum CodingKeys: String, CodingKey { case returning, docks, electricBikes }
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             returning = try values.decodeIfPresent(Bool.self, forKey: .returning)
             missingDocks = try values.contains(.docks) && values.decodeNil(forKey: .docks)
+            missingElectricBikes = try values.contains(.electricBikes) && values.decodeNil(forKey: .electricBikes)
         }
     }
     #endif
@@ -123,10 +128,10 @@ struct PreviewPresentation: ViewModifier {
             .sheet(isPresented: $presented) {
                 if SimulatorPreview.current?.page == "onboarding" {
                     OnboardingView { presented = false }
-                } else { StationDetailView(stationID: "demo-0") }
+                }
             }
             .task {
-                presented = model.isDemo && ["detail", "onboarding"].contains(SimulatorPreview.current?.page ?? "")
+                presented = model.isDemo && SimulatorPreview.current?.page == "onboarding"
             }
         } else { content }
         #else

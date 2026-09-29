@@ -3,13 +3,17 @@ import CoreLocation
 import CoreMotion
 import WatchKit
 import ParkCore
+import AppIntents
+import RelevanceKit
 
 @MainActor
 final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     static let shared = AppModel()
     @Published var snapshot: StationSnapshot?
     @Published var mode: SearchMode = .docks
-    @Published var tab = 0
+    @Published var sheet: MapSheet?
+    @Published var bikeFilter: BikeFilter = .all
+    @Published var rideSuggestionStatus = "watchOS chooses when to show the shortcut."
     @Published var origin: Coordinate?
     @Published var locationDate: Date?
     @Published var now = Date()
@@ -35,6 +39,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var arrivedTarget: String?
     private var nextRefresh = Date.distantPast
     private var failures = 0
+    private var suggestionUpdate: Task<Void, Never>?
 
     var riding: Bool { ridingSince != nil }
     var center: Coordinate { origin ?? .toronto }
@@ -52,6 +57,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         return "Updated \(seconds)s ago"
     }
     var autoDetect: Bool { UserDefaults.standard.bool(forKey: "autoDetect") }
+    var suggestRide: Bool { UserDefaults.standard.object(forKey: "suggestRide") as? Bool ?? true }
     private var cacheURL: URL? {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
             .appendingPathComponent("stations-v1.json")
@@ -73,6 +79,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         now = Date()
         if value { updateAuthorization() }
         configureServices()
+        if value { updateRideSuggestion() }
     }
     func requestLocation() {
         guard !isDemo else { return }
@@ -84,25 +91,27 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     func startRide() {
-        guard !riding else { mode = .docks; tab = 0; return }
+        guard !riding else { mode = .docks; sheet = nil; return }
         if !isDemo && location.authorizationStatus == .notDetermined {
             pendingRide = true; requestLocation(); return
         }
         guard isDemo || location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways else {
             pendingRide = false; requestLocation(); return
         }
-        ridingSince = Date(); mode = .docks; tab = 0
+        ridingSince = Date(); mode = .docks; sheet = nil
         detector.reset()
         // Actual background navigation is configured below. watchOS 7+ ignores
         // the deprecated frontmost-timeout override; Return to Clock is user controlled.
         WKInterfaceDevice.current().play(.start)
         configureServices()
+        updateRideSuggestion()
     }
     func stopRide() {
         ridingSince = nil; pendingRide = false; detector.suppress(at: Date())
         arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor()
         WKInterfaceDevice.current().play(.stop)
         configureServices()
+        updateRideSuggestion()
     }
     func tick() {
         guard !isDemo else { return }
@@ -112,7 +121,30 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             stopRide(); error = "Ride mode stopped after 90 minutes to save battery. Start it again to continue."
         }
     }
-    func settingsChanged() { detector.reset(); configureServices() }
+    func settingsChanged() { detector.reset(); configureServices(); updateRideSuggestion() }
+    func rideSuggestionChanged() { updateRideSuggestion() }
+    private func updateRideSuggestion() {
+        guard !isDemo else { return }
+        let previous = suggestionUpdate
+        let start = suggestRide ? ridingSince : nil
+        // Serialize donations so a delayed start cannot overwrite a later End.
+        suggestionUpdate = Task { [weak self] in
+            await previous?.value
+            var intents: [RelevantIntent] = []
+            if let start, start.addingTimeInterval(5_400) > Date() {
+                intents = [RelevantIntent(RideWidgetConfiguration(), widgetKind: RideWidgetConfiguration.kind,
+                    relevance: .date(from: start, to: start.addingTimeInterval(5_400)))]
+            }
+            do {
+                try await RelevantIntentManager.shared.updateRelevantIntents(intents)
+                self?.rideSuggestionStatus = start == nil
+                    ? "Suggested after Ride starts. watchOS controls placement."
+                    : "Ride shortcut suggested to Smart Stack. watchOS controls placement."
+            } catch {
+                self?.rideSuggestionStatus = "Smart Stack suggestion unavailable. The complication still opens the map."
+            }
+        }
+    }
     func toggleFavorite(_ id: String) {
         if favorites.contains(id) { favorites.remove(id) } else { favorites.insert(id) }
         UserDefaults.standard.set(Array(favorites).sorted(), forKey: "favorites")
@@ -121,17 +153,16 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         targetID = station.id; arrivedTarget = nil
         targetMonitor = TargetAvailabilityMonitor()
         _ = targetMonitor.update(target: station, snapshot: snapshot, now: now)
-        tab = 0
+        sheet = nil
     }
     func clearTarget() { targetID = nil; arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor() }
-    func nearby(includeUnavailable: Bool = true, limit: Int = 40) -> [NearbyStation] {
+    func mapStations(limit: Int = 40) -> [NearbyStation] {
         guard let snapshot else { return [] }
-        let minimum = mode == .docks ? max(1, UserDefaults.standard.integer(forKey: "minimumDocks")) : 1
         return StationPlanner.nearby(snapshot, from: center, mode: mode, now: now,
-                                     minimum: minimum, includeUnavailable: includeUnavailable, limit: limit)
+                                     includeUnavailable: true, limit: limit)
     }
-    func freshCount(_ station: Station, mode: SearchMode? = nil) -> Int? {
-        snapshot?.usableCount(station, mode: mode ?? self.mode, at: now)
+    func freshCount(_ station: Station, mode: SearchMode? = nil, bikeFilter: BikeFilter? = nil) -> Int? {
+        snapshot?.usableCount(station, mode: mode ?? self.mode, at: now, bikeFilter: bikeFilter ?? self.bikeFilter)
     }
     func refresh() async {
         guard !refreshing, !isDemo, Date() >= nextRefresh else { return }

@@ -7,7 +7,7 @@
       ...(scenario.overrides?.[s.id] || {}),
     }));
   }
-  function count(station, mode, age) {
+  function count(station, mode, age, bikeFilter = "all") {
     if (
       age < -60 ||
       age > 120 ||
@@ -15,7 +15,11 @@
       !station[mode === "docks" ? "returning" : "renting"]
     )
       return null;
-    return station[mode] ?? null;
+    return (
+      station[
+        mode === "bikes" && bikeFilter === "electric" ? "electricBikes" : mode
+      ] ?? null
+    );
   }
   function distance(station) {
     const radians = Math.PI / 180;

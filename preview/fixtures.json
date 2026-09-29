@@ -10,7 +10,8 @@
       "docks": 12,
       "installed": true,
       "renting": true,
-      "returning": true
+      "returning": true,
+      "electricBikes": 2
     },
     {
       "id": "demo-1",
@@ -21,7 +22,8 @@
       "docks": 0,
       "installed": true,
       "renting": true,
-      "returning": true
+      "returning": true,
+      "electricBikes": 0
     },
     {
       "id": "demo-2",
@@ -32,7 +34,8 @@
       "docks": 3,
       "installed": true,
       "renting": true,
-      "returning": true
+      "returning": true,
+      "electricBikes": 1
     },
     {
       "id": "demo-3",
@@ -43,7 +46,8 @@
       "docks": 8,
       "installed": true,
       "renting": true,
-      "returning": true
+      "returning": true,
+      "electricBikes": null
     }
   ],
   "scenarios": [
@@ -57,7 +61,8 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Fresh availability, including a genuinely full station."
+      "description": "Fresh availability, including a genuinely full station.",
+      "bikeFilter": "all"
     },
     {
       "id": "bikes",
@@ -69,7 +74,21 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "The same stations in bike mode."
+      "description": "The same stations in bike mode.",
+      "bikeFilter": "all"
+    },
+    {
+      "id": "ebikes",
+      "title": "E-bikes only",
+      "group": "Everyday",
+      "page": "map",
+      "mode": "bikes",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Electric bicycle counts, including fresh zero and unknown type data.",
+      "bikeFilter": "electric"
     },
     {
       "id": "ride",
@@ -82,19 +101,8 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "An explicit navigation session with a destination."
-    },
-    {
-      "id": "nearby",
-      "title": "Nearby list",
-      "group": "Screens",
-      "page": "nearby",
-      "mode": "docks",
-      "riding": false,
-      "age": 0,
-      "data": true,
-      "gps": true,
-      "description": "Available stations ranked by straight-line distance."
+      "description": "An explicit navigation session with a destination.",
+      "bikeFilter": "all"
     },
     {
       "id": "station",
@@ -106,7 +114,8 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Inventory, favorite and destination actions."
+      "description": "Inventory, favorite and destination actions.",
+      "bikeFilter": "all"
     },
     {
       "id": "settings",
@@ -118,7 +127,8 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Cycling is opt-in; manual Ride and End remain available."
+      "description": "Cycling is opt-in; manual Ride and End remain available.",
+      "bikeFilter": "all"
     },
     {
       "id": "onboarding",
@@ -130,7 +140,8 @@
       "age": 0,
       "data": true,
       "gps": false,
-      "description": "The actual onboarding content without a system permission prompt."
+      "description": "The actual onboarding content without a system permission prompt.",
+      "bikeFilter": "all"
     },
     {
       "id": "stale",
@@ -142,7 +153,8 @@
       "age": 600,
       "data": true,
       "gps": true,
-      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts."
+      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts.",
+      "bikeFilter": "all"
     },
     {
       "id": "offline",
@@ -155,7 +167,8 @@
       "data": true,
       "gps": false,
       "error": "Offline / feed unavailable. Check the timestamps before riding to a station.",
-      "description": "Cached station locations remain visible; inventory is unknown."
+      "description": "Cached station locations remain visible; inventory is unknown.",
+      "bikeFilter": "all"
     },
     {
       "id": "unavailable",
@@ -168,23 +181,29 @@
       "data": true,
       "gps": true,
       "overrides": {
-        "demo-0": { "returning": false },
-        "demo-2": { "docks": null }
+        "demo-0": {
+          "returning": false
+        },
+        "demo-2": {
+          "docks": null
+        }
       },
-      "description": "Closed and missing-count stations are gray. Fresh zero stays red."
+      "description": "Closed and missing-count stations are gray. Fresh zero stays red.",
+      "bikeFilter": "all"
     },
     {
       "id": "empty",
       "title": "Empty feed",
       "group": "Failures",
-      "page": "nearby",
+      "page": "map",
       "mode": "docks",
       "riding": false,
       "age": 0,
       "data": true,
       "empty": true,
       "gps": true,
-      "description": "A valid feed with no stations is not a network failure."
+      "description": "A valid feed with no stations is not a network failure.",
+      "bikeFilter": "all"
     },
     {
       "id": "error",
@@ -197,20 +216,43 @@
       "data": false,
       "gps": false,
       "error": "Couldn't load stations. Check your connection and retry.",
-      "description": "No station data, a clear error and a retry action."
+      "description": "No station data, a clear error and a retry action.",
+      "bikeFilter": "all"
     },
     {
       "id": "large-text",
       "title": "Large text",
       "group": "Accessibility",
-      "page": "nearby",
+      "page": "detail",
       "mode": "docks",
       "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
       "largeText": true,
-      "description": "Nearby list at accessibility text size. Inspect native wrapping and clipping."
+      "description": "Station details at accessibility text size.",
+      "bikeFilter": "all"
+    },
+    {
+      "id": "ebikes-unknown",
+      "title": "Unknown e-bike counts",
+      "group": "Failures",
+      "page": "map",
+      "mode": "bikes",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Missing e-bike data stays unknown while a confirmed zero remains zero.",
+      "bikeFilter": "electric",
+      "overrides": {
+        "demo-0": {
+          "electricBikes": null
+        },
+        "demo-2": {
+          "electricBikes": null
+        }
+      }
     }
   ]
 }

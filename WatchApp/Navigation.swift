@@ -1,14 +1,25 @@
 import Foundation
 import ParkCore
 
+enum MapSheet: Identifiable {
+    case settings, station(String)
+    var id: String {
+        switch self { case .settings: return "settings"; case .station(let id): return "station-" + id }
+    }
+    var screen: String {
+        switch self { case .settings: return "settings"; case .station: return "detail" }
+    }
+}
+
 extension AppModel {
     /// The production widget callback and simulator route checks share this method.
     @discardableResult
     func open(_ url: URL) -> Bool {
         guard let route = AppRoute(url: url) else { return false }
+        sheet = nil
         switch route {
-        case .docks: mode = .docks; tab = 0
-        case .bikes: mode = .bikes; tab = 0
+        case .docks: mode = .docks
+        case .bikes: mode = .bikes; bikeFilter = .all
         case .ride: startRide()
         }
         return true
@@ -31,7 +42,7 @@ enum SimulatorSmoke {
         let accepted = model.open(url)
         let report: [String: Any] = [
             "url": url.absoluteString, "accepted": accepted, "demo": model.isDemo,
-            "mode": model.mode.rawValue, "riding": model.riding, "tab": model.tab
+            "mode": model.mode.rawValue, "riding": model.riding, "screen": model.sheet?.screen ?? "map"
         ]
         do {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]

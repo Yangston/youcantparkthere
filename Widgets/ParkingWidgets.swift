@@ -1,5 +1,6 @@
 import SwiftUI
 import WidgetKit
+import AppIntents
 
 struct ParkingEntry: TimelineEntry { let date: Date }
 struct ParkingProvider: TimelineProvider {
@@ -56,7 +57,33 @@ struct FindBikesWidget: Widget {
             .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline, .accessoryCorner])
     }
 }
+
+struct RideShortcutProvider: AppIntentTimelineProvider {
+    typealias Intent = RideWidgetConfiguration
+    func placeholder(in context: Context) -> ParkingEntry { ParkingEntry(date: Date()) }
+    func snapshot(for configuration: RideWidgetConfiguration, in context: Context) async -> ParkingEntry {
+        ParkingEntry(date: Date())
+    }
+    func timeline(for configuration: RideWidgetConfiguration, in context: Context) async -> Timeline<ParkingEntry> {
+        Timeline(entries: [ParkingEntry(date: Date())], policy: .never)
+    }
+    func recommendations() -> [AppIntentRecommendation<RideWidgetConfiguration>] {
+        [AppIntentRecommendation(intent: RideWidgetConfiguration(), description: "Ride shortcut")]
+    }
+}
+
+struct RideShortcutWidget: Widget {
+    var body: some WidgetConfiguration {
+        AppIntentConfiguration(kind: RideWidgetConfiguration.kind, intent: RideWidgetConfiguration.self,
+                               provider: RideShortcutProvider()) { _ in
+            ParkingWidgetView(mode: "docks")
+        }
+        .configurationDisplayName("Ride shortcut")
+        .description("Suggested during an active Ride. watchOS controls when it appears.")
+        .supportedFamilies([.accessoryRectangular])
+    }
+}
 @main
 struct ParkingWidgetBundle: WidgetBundle {
-    var body: some Widget { FindDocksWidget(); FindBikesWidget() }
+    var body: some Widget { FindDocksWidget(); FindBikesWidget(); RideShortcutWidget() }
 }

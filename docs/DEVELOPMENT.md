@@ -20,8 +20,8 @@ Open `http://127.0.0.1:8765`. Stop with Ctrl+C. The server binds to loopback and
 
 | Surface | Use it for | Evidence boundary |
 |---|---|---|
-| Interaction sandbox | Click through modes, station selection, destination, favorites, Ride/End, filters, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, maps handoff or background execution. Editing SwiftUI does not automatically change this sketch. |
-| Native captures | Review the actual map/list/detail/settings/onboarding layouts, compact/large Watch displays, accessibility text, stale/offline/closed/empty/error states | The current SwiftUI app compiled and launched in watchOS Simulator. Scenario state and process survival are asserted. Screenshots still need human visual review. |
+| Interaction sandbox | Click through modes, station selection, destination, favorites, Ride/End, e-bike filtering, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, maps handoff or background execution. Editing SwiftUI does not automatically change this sketch. |
+| Native captures | Review the actual map/detail/settings/onboarding layouts, compact/large Watch displays, accessibility text, stale/offline/closed/empty/error states | The current SwiftUI app compiled and launched in watchOS Simulator. Scenario state and process survival are asserted. Screenshots still need human visual review. |
 | Physical Watch | Permission prompts, complications/Siri, background behavior, GPS/motion, haptics, battery and connectivity | Record only tests actually performed in DEVICE_TESTS.md. |
 
 The shared scenario catalog is `preview/fixtures.json`. Sample data is intentional and labeled. It is never a fallback for a failed live request. The native fixture code activates only in **Debug simulator** builds; `--demo` and `--preview-scenario` cannot activate it on a physical-device or Release build.
@@ -66,7 +66,7 @@ Artifacts expire after 30 days. Keep an extracted known-good preview outside the
 
 - **Windows tooling job:** Python helper/import/report/release-gate tests and JS freshness/filter semantics.
 - **Two native jobs:** compact and large Watch devices selected from the newest available runtime. Actual model/runtime names are recorded rather than guessed.
-- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 13 scenario state assertions/screenshots > offline preview report.
+- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 14 scenario state assertions/screenshots > offline preview report.
 - **Partial failures:** available screenshots and logs are still uploaded, with failed/missing states visible. CI remains red when any required step fails.
 - **Live feed:** remote outages are diagnostic and do not masquerade as deterministic test failures.
 - **Signed distribution:** a separate manual workflow restricted to `main` and the protected `testflight` environment. It requires green unsigned CI for the exact commit. See RELEASING.md.
@@ -83,7 +83,7 @@ A fresh paired simulator may spend minutes migrating system data. The harness al
 4. If the interaction flow changes, update the approximate sandbox separately in `preview/app.js`. The shared fixtures prevent data drift; they do not make HTML a SwiftUI renderer.
 5. Review both native device reports and large-text captures, then merge. Record relevant hardware checks when you choose to install a new beta.
 
-The fixture `overrides` currently supports `returning` and an explicitly null `docks` value. Station report/publication ages are equal in these scenarios; finer freshness edge cases live in the Swift unit tests.
+The fixture `overrides` supports `returning` and explicitly null `docks` or `electricBikes` values. `bikeFilter` selects `all` or `electric` while `mode` remains `bikes`. The removed nearby page is not a valid preview screen. Station report/publication ages are equal in these scenarios; finer freshness edge cases live in the Swift unit tests.
 
 ## Optional local native work on a Mac
 

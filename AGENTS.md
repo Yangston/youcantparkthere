@@ -9,6 +9,8 @@ This is a native watchOS application, not a web prototype. Stone edits on Window
 - Keep motion detection opt-in and its app-lifecycle constraints explicit. No fake workouts, silent audio, or inappropriate extended-runtime categories.
 - Background location belongs only to an active navigation ride. Preserve manual stop, time limit, and auto-restart suppression.
 - Widgets are intentional launchers. Do not add 'live' counts without freshness and refresh-budget design.
+- The active-Ride Smart Stack suggestion is system-controlled, not passive closed-app cycling detection. Clear its dated relevance on End/timeout/opt-out and never promise a forced clock banner.
+- E-bike counts come from GBFS vehicle-type metadata and obey normal freshness/operational checks. Missing type data is unknown, not zero; electric scooters are not e-bikes.
 - Signed TestFlight upload is manual and `main`-only. Credentials go exclusively in GitHub's protected `testflight` environment; never in source, issues, logs, or chat.
 - Update `docs/DEVICE_TESTS.md` only with tests actually run. Successful simulator compilation is not physical-device validation.
 - Daily workflow: `python scripts/dev.py check`, then `python scripts/dev.py preview`. Follow `docs/DEVELOPMENT.md`; use `docs/APPLE_SIGNING.md` and `docs/RELEASING.md` for distribution.

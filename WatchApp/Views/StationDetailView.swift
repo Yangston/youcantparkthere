@@ -14,8 +14,11 @@ struct StationDetailView: View {
                     HStack {
                         inventory("Docks", count: model.freshCount(station, mode: .docks))
                         Spacer()
-                        inventory("Bikes", count: model.freshCount(station, mode: .bikes))
+                        inventory("Bikes", count: model.freshCount(station, mode: .bikes, bikeFilter: .all))
+                        Spacer()
+                        inventory("E-bikes", count: model.freshCount(station, mode: .bikes, bikeFilter: .electric))
                     }
+                    Text("E-bikes are included in the total bikes.").font(.caption2).foregroundStyle(.secondary)
                     if !(model.snapshot?.isFresh(station, at: model.now) ?? false) {
                         Text("Availability unknown or stale. Refresh before choosing this station.").font(.caption).foregroundStyle(.orange)
                     } else if !station.operational(for: model.mode) {
@@ -37,8 +40,9 @@ struct StationDetailView: View {
     }
     private func inventory(_ title: String, count: Int?) -> some View {
         VStack(alignment: .leading) {
-            Text(count.map(String.init) ?? "–").font(.system(size: 34, weight: .heavy, design: .rounded)).foregroundStyle(.orange)
-            Text(title).font(.caption)
+            Text(count.map(String.init) ?? "–").font(.system(size: 26, weight: .heavy, design: .rounded))
+                .foregroundStyle(.orange).lineLimit(1).minimumScaleFactor(0.7)
+            Text(title).font(.caption2)
         }
     }
 }

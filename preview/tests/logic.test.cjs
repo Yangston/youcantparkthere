@@ -39,10 +39,20 @@ test("empty and failed loads cannot invent demo stations", () => {
       0,
     );
 });
-test("nearby filter applies availability and distance sorting", () => {
-  const stations = api.nearby(fixtures.stations, "docks", 0, 5);
+test("e-bike mode distinguishes available, zero, unknown and stale counts", () => {
   assert.deepEqual(
-    stations.map((s) => s.id),
-    ["demo-0", "demo-3"],
+    fixtures.stations.map((s) => api.count(s, "bikes", 0, "electric")),
+    [2, 0, 1, null],
   );
+  assert.equal(api.count(fixtures.stations[0], "bikes", 121, "electric"), null);
+  assert.equal(
+    api.count(
+      { ...fixtures.stations[0], renting: false },
+      "bikes",
+      0,
+      "electric",
+    ),
+    null,
+  );
+  assert.equal(api.count(fixtures.stations[0], "docks", 0, "electric"), 12);
 });

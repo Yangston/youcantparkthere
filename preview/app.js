@@ -49,9 +49,8 @@
       target: scenario.target,
       selected: "demo-0",
       favorites: new Set(),
-      onlyFavorites: false,
-      showUnavailable: false,
-      minimum: 1,
+      bikeFilter: scenario.bikeFilter || "all",
+      suggest: true,
       detect: false,
     };
     $("scenario-title").textContent = scenario.title;
@@ -72,7 +71,8 @@
     renderNative();
   }
   const stations = () => api.stationsFor(fixtures, scenario);
-  const count = (s, mode = state.mode) => api.count(s, mode, scenario.age);
+  const count = (s, mode = state.mode, filter = state.bikeFilter) =>
+    api.count(s, mode, scenario.age, filter);
   function setMode(mode) {
     view = mode;
     $("sandbox-panel").hidden = mode !== "sandbox";
@@ -87,20 +87,23 @@
   $("watch-size").onchange = () => {
     $("watch").classList.toggle("large", $("watch-size").value === "large");
   };
-  for (const button of document.querySelectorAll("[data-page]"))
-    button.onclick = () => {
-      state.page = button.dataset.page;
-      render();
-    };
   function note(message) {
     $("interaction-note").textContent = message;
   }
   function render() {
     const screen = $("watch-screen");
     screen.classList.toggle("large-text", !!scenario.largeText);
+    screen.classList.toggle("sheet-screen", state.page !== "map");
     const data = stations();
     $("state").innerHTML = [
-      ["Mode", state.mode === "docks" ? "Parking" : "Bikes"],
+      [
+        "Mode",
+        state.mode === "docks"
+          ? "Parking"
+          : state.bikeFilter === "electric"
+            ? "E-bikes"
+            : "All bikes",
+      ],
       [
         "Data",
         !scenario.data
@@ -112,56 +115,53 @@
               : "Fresh sample",
       ],
       ["Ride", state.riding ? "Active (simulated)" : "Stopped"],
+      [
+        "Clock shortcut",
+        state.riding && state.suggest
+          ? "Suggested; OS decides"
+          : "Not requested",
+      ],
       ["Location", scenario.gps ? "Sample coordinate" : "No GPS"],
       ["Destination", state.target ? "Selected" : "None"],
     ]
       .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`)
       .join("");
-    for (const button of document.querySelectorAll("[data-page]"))
-      button.classList.toggle("selected", button.dataset.page === state.page);
     if (state.page === "map") {
-      screen.innerHTML = `<div class="map-screen"><div class="watch-header"><button class="plain" id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button><button class="plain" id="gps" aria-label="Recenter">↗</button></div><div class="watch-demo">DEMO · sample stations</div><div class="sample-map"><svg viewBox="0 0 200 160" preserveAspectRatio="none" aria-hidden="true"><path fill="#344138" d="M0 0h200v160H0z"/><path stroke="#536057" stroke-width="9" d="M-20 70L210 25M-20 130L230 80M50 -20L100 200M145 -20L190 190"/><path stroke="#2b342e" stroke-width="3" d="M-20 70L210 25M-20 130L230 80M50 -20L100 200M145 -20L190 190"/><path fill="#3e5544" d="M15 7h40v25H15zM110 93h33v40h-33z"/><text x="5" y="154" fill="#85958a" font-size="7">SAMPLE MAP</text></svg>${data
-        .map((s) => {
-          const c = count(s);
-          return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.target === s.id ? "target" : ""}" data-station="${esc(s.id)}" style="left:${15 + (s.longitude + 79.389) * 6500}%;top:${15 + (43.656 - s.latitude) * 11000}%" aria-label="${esc(s.name)}, ${c === null ? "unknown" : c} ${state.mode}">${c ?? "–"}</button>`;
-        })
-        .join(
-          "",
-        )}${!scenario.data ? '<div class="map-overlay">Stations unavailable<button id="retry">Retry sample</button></div>' : ""}</div>${state.target ? `<button id="target" class="plain target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><span>DEMO · not live</span><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div>${scenario.error ? '<p class="map-error">Connection issue · see settings</p>' : ""}</div>`;
+      screen.innerHTML = `<div class="map-screen">
+        <div class="sample-map"><svg viewBox="0 0 200 240" preserveAspectRatio="none" aria-hidden="true"><path fill="#344138" d="M0 0h200v240H0z"/><path stroke="#536057" stroke-width="9" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path stroke="#2b342e" stroke-width="3" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path fill="#3e5544" d="M15 45h40v30H15zM105 133h35v45h-35z"/><text x="8" y="209" fill="#a6b6ab" font-size="6">SAMPLE MAP</text></svg>
+        ${data
+          .map((s) => {
+            const c = count(s),
+              e = count(s, "bikes", "electric");
+            return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.target === s.id ? "target" : ""}" data-station="${esc(s.id)}" style="left:${15 + (s.longitude + 79.389) * 6500}%;top:${28 + (43.656 - s.latitude) * 7200}%" aria-label="${esc(s.name)}, ${c === null ? "unknown" : c} ${state.mode === "bikes" && state.bikeFilter === "electric" ? "e-bikes" : state.mode}">${c ?? "–"}${state.mode === "bikes" && (state.bikeFilter === "electric" || e > 0) ? "<small>ϟ</small>" : ""}</button>`;
+          })
+          .join("")}
+        ${!scenario.data ? '<div class="map-overlay">Stations unavailable<button id="retry">Retry sample</button></div>' : scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
+        <div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button>${state.mode === "bikes" ? `<button id="electric" aria-label="${state.bikeFilter === "electric" ? "E-bikes only. Show all bikes" : "All bikes. Show e-bikes only"}" class="${state.bikeFilter === "electric" ? "selected-filter" : ""}">ϟ</button>` : ""}<span></span><button id="gps" aria-label="Recenter">↗</button><button id="settings" aria-label="Ride and settings">⚙</button></div>
+        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><div class="watch-demo">${state.mode === "bikes" && state.bikeFilter === "electric" ? "E-bikes · " : ""}DEMO</div><span>${scenario.error ? "Connection issue · settings" : "Sample data · not live"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
       $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
         render();
       };
+      if ($("electric"))
+        $("electric").onclick = () => {
+          state.bikeFilter =
+            state.bikeFilter === "electric" ? "all" : "electric";
+          render();
+        };
       $("gps").onclick = () =>
-        note(
-          "Sample coordinate only. The browser does not request your location.",
-        );
+        note("Sample coordinate only; no browser GPS request.");
+      $("settings").onclick = () => {
+        state.page = "settings";
+        render();
+      };
       $("ride").onclick = toggleRide;
       if ($("target")) $("target").onclick = () => openStation(state.target);
       if ($("retry"))
         $("retry").onclick = () => {
           select("docks");
-          note("Loaded an explicit sample scenario. No live request was made.");
+          note("An explicit sample scenario was loaded; no live fallback.");
         };
-    } else if (state.page === "nearby") {
-      const nearby = api
-        .nearby(
-          data,
-          state.mode,
-          scenario.age,
-          state.mode === "docks" ? state.minimum : 1,
-          state.showUnavailable,
-        )
-        .filter((s) => !state.onlyFavorites || state.favorites.has(s.id));
-      screen.innerHTML = `<div class="watch-list"><div class="watch-title">Nearby ${state.mode === "docks" ? "parking" : "bikes"}</div><p class="watch-copy">DEMO · straight-line distances</p><label class="watch-toggle">Favorites<input id="favorites-only" type="checkbox" ${state.onlyFavorites ? "checked" : ""}></label>${nearby.map((s) => `<button class="row" data-station="${esc(s.id)}"><span>${esc(s.name)}<small>${distance(s)}</small></span><b>${count(s) ?? "–"}</b></button>`).join("") || `<p class="watch-copy">${scenario.age > 120 || !scenario.data ? "No fresh availability. Check connection or show unavailable stations." : "No matches within 5 km. Try showing unavailable stations."}</p>`}<label class="watch-toggle">Show unavailable<input id="unavailable" type="checkbox" ${state.showUnavailable ? "checked" : ""}></label></div>`;
-      $("favorites-only").onchange = (e) => {
-        state.onlyFavorites = e.target.checked;
-        render();
-      };
-      $("unavailable").onchange = (e) => {
-        state.showUnavailable = e.target.checked;
-        render();
-      };
     } else if (state.page === "detail") {
       const s = data.find((s) => s.id === state.selected) || data[0];
       if (!s) {
@@ -170,8 +170,9 @@
         return;
       }
       const docks = count(s, "docks"),
-        bikes = count(s, "bikes");
-      screen.innerHTML = `<button id="back" class="plain">‹ Back</button><div class="watch-title">${esc(s.name)}</div><p class="watch-copy">${distance(s)} · straight line</p><div class="detail-counts"><span><b>${docks ?? "–"}</b>Docks</span><span><b>${bikes ?? "–"}</b>Bikes</span></div>${docks === null ? '<p class="watch-copy">Availability unknown or station unavailable.</p>' : ""}<button class="primary" id="destination" ${state.target !== s.id && (docks ?? 0) === 0 ? "disabled" : ""}>${state.target === s.id ? "Clear destination" : "Make destination"}</button><button class="wide" id="favorite">${state.favorites.has(s.id) ? "Unfavorite" : "Favorite"}</button><button class="wide" id="maps">Open in Apple Maps</button><p class="watch-copy">DEMO · not live</p><p class="watch-copy">Counts are not reservations. Verify the dock’s return signal.</p>`;
+        bikes = count(s, "bikes", "all"),
+        electric = count(s, "bikes", "electric");
+      screen.innerHTML = `<button id="back" class="plain">× Close</button><div class="watch-title">${esc(s.name)}</div><p class="watch-copy">${distance(s)} · straight line</p><div class="detail-counts"><span><b>${docks ?? "–"}</b>Docks</span><span><b>${bikes ?? "–"}</b>Bikes</span><span><b>${electric ?? "–"}</b>E-bikes</span></div><p class="watch-copy">E-bikes are included in total bikes.</p><button class="primary" id="destination" ${state.target !== s.id && (docks ?? 0) === 0 ? "disabled" : ""}>${state.target === s.id ? "Clear destination" : "Make destination"}</button><button class="wide" id="favorite">${state.favorites.has(s.id) ? "Unfavorite" : "Favorite"}</button><button class="wide" id="maps">Open in Apple Maps</button><p class="watch-copy">DEMO · not live. Counts are not reservations.</p>`;
       $("back").onclick = () => {
         state.page = "map";
         render();
@@ -187,36 +188,37 @@
           : state.favorites.add(s.id);
         render();
       };
-      $("maps").onclick = () =>
-        note(
-          "Apple Maps handoff must be checked on the Watch; this sandbox stays local.",
-        );
+      $("maps").onclick = () => note("Apple Maps handoff needs a Watch test.");
     } else if (state.page === "onboarding") {
       screen.innerHTML =
-        '<div class="watch-title">Ⓟ<br>You Can’t<br>Park There</div><p class="watch-copy">Find a bike. Find an empty dock. Leave your phone in your pocket.</p><p class="watch-copy">Auto-detection works only while this app is running—not from a closed app.</p><button class="primary" id="enable">Enable location</button><button class="wide" id="browse">Browse downtown</button><p class="watch-copy">Not affiliated with Bike Share Toronto. Availability can change.</p>';
+        '<div class="watch-title">Ⓟ<br>You Can’t<br>Park There</div><p class="watch-copy">Find a bike. Find an empty dock. Leave your phone in your pocket.</p><p class="watch-copy">Auto-detection works while the app is running, not from a closed app.</p><button class="primary" id="enable">Enable location</button><button class="wide" id="browse">Browse downtown</button>';
       $("enable").onclick = () => {
         state.page = "map";
         render();
-        note("Permission prompt simulated. No browser GPS access.");
+        note("Permission simulated; no browser GPS.");
       };
       $("browse").onclick = () => {
         state.page = "map";
         render();
       };
     } else {
-      screen.innerHTML = `<div class="watch-title">Ride & settings</div><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.detect ? "Enabled in sketch only" : "Off"}. Works while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Minimum docks<select id="minimum">${[1, 3, 5].map((n) => `<option ${n === state.minimum ? "selected" : ""}>${n}</option>`).join("")}</select></label><p class="watch-copy">Filters the list, not the map.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<div class="watch-title">Keep the map handy</div><p class="watch-copy">Watch Settings → General → Return to Clock → this app → After 1 hour.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
+      screen.innerHTML = `<button id="back" class="plain">× Close</button><div class="watch-title">Ride & settings</div><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, tap lightning for e-bikes only.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
+      $("back").onclick = () => {
+        state.page = "map";
+        render();
+      };
       $("ride").onclick = toggleRide;
       $("detect").onchange = (e) => {
         state.detect = e.target.checked;
         note("No motion sensing occurs in this preview.");
       };
-      $("minimum").onchange = (e) => {
-        state.minimum = Number(e.target.value);
+      $("suggest").onchange = (e) => {
+        state.suggest = e.target.checked;
+        render();
+        note("Preview only. watchOS controls actual Smart Stack placement.");
       };
       $("refresh").onclick = () =>
-        note(
-          "Sample fixtures stay fixed for repeatable comparisons. Choose another scenario to change data.",
-        );
+        note("Fixtures stay fixed. Select another scenario to change data.");
     }
     for (const button of screen.querySelectorAll("[data-station]"))
       button.onclick = () => openStation(button.dataset.station);
@@ -235,11 +237,13 @@
     }
     render();
     note(
-      "Ride state is simulated. Background execution and haptics require a device test.",
+      "Ride is simulated. Automatic clock hints must be checked on your Watch.",
     );
   }
 
-  const captured = report.entries.filter((e) => e.status === "captured").length;
+  const captured = fixtures.scenarios.filter((s) =>
+    report.entries.some((e) => e.id === s.id && e.status === "captured"),
+  ).length;
   $("capture-count").textContent =
     `${captured} / ${fixtures.scenarios.length} native states captured`;
   $("native-provenance").textContent =

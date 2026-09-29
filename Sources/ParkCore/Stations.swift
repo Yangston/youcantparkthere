@@ -6,6 +6,8 @@ public enum SearchMode: String, Codable, CaseIterable, Sendable {
     public var symbol: String { self == .docks ? "parkingsign.circle.fill" : "bicycle" }
 }
 
+public enum BikeFilter: String, Codable, Sendable { case all, electric }
+
 public struct Coordinate: Codable, Equatable, Sendable {
     public let latitude: Double
     public let longitude: Double
@@ -31,18 +33,22 @@ public struct Station: Identifiable, Codable, Equatable, Sendable {
     public let coordinate: Coordinate
     public let bikes: Int?
     public let docks: Int?
+    public let electricBikes: Int?
     public let installed: Bool
     public let renting: Bool
     public let returning: Bool
     public let reportedAt: Date?
 
     public init(id: String, name: String, coordinate: Coordinate, bikes: Int?, docks: Int?,
-                installed: Bool, renting: Bool, returning: Bool, reportedAt: Date?) {
+                installed: Bool, renting: Bool, returning: Bool, reportedAt: Date?, electricBikes: Int? = nil) {
         self.id = id; self.name = name; self.coordinate = coordinate
         self.bikes = bikes; self.docks = docks; self.installed = installed
         self.renting = renting; self.returning = returning; self.reportedAt = reportedAt
+        self.electricBikes = electricBikes
     }
-    public func count(for mode: SearchMode) -> Int? { mode == .docks ? docks : bikes }
+    public func count(for mode: SearchMode, bikeFilter: BikeFilter = .all) -> Int? {
+        mode == .docks ? docks : bikeFilter == .electric ? electricBikes : bikes
+    }
     public func operational(for mode: SearchMode) -> Bool {
         installed && (mode == .docks ? returning : renting)
     }
@@ -65,9 +71,9 @@ public struct StationSnapshot: Codable, Equatable, Sendable {
         guard isFresh(at: now), let reported = station.reportedAt else { return false }
         return (-60...300).contains(now.timeIntervalSince(reported))
     }
-    public func usableCount(_ station: Station, mode: SearchMode, at now: Date) -> Int? {
+    public func usableCount(_ station: Station, mode: SearchMode, at now: Date, bikeFilter: BikeFilter = .all) -> Int? {
         guard isFresh(station, at: now), station.operational(for: mode) else { return nil }
-        return station.count(for: mode)
+        return station.count(for: mode, bikeFilter: bikeFilter)
     }
 }
 

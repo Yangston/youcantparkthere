@@ -78,7 +78,7 @@ def process_id(output: str) -> int:
 
 def validate_report(report: dict, mode: str) -> None:
     expected = {'url': f'youcantparkthere://{mode}', 'accepted': True, 'demo': True,
-                'mode': 'bikes' if mode == 'bikes' else 'docks', 'riding': mode == 'ride', 'tab': 0}
+                'mode': 'bikes' if mode == 'bikes' else 'docks', 'riding': mode == 'ride', 'screen': 'map'}
     if mode not in ('docks', 'bikes', 'ride') or report != expected:
         raise RuntimeError(f'Route state mismatch: expected {expected}, got {report}')
 

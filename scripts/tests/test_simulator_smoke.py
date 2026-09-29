@@ -44,11 +44,11 @@ class SmokeHarnessTests(unittest.TestCase):
         for mode in ('docks', 'bikes', 'ride'):
             smoke.validate_report({'url': f'youcantparkthere://{mode}', 'accepted': True, 'demo': True,
                                    'mode': 'bikes' if mode == 'bikes' else 'docks',
-                                   'riding': mode == 'ride', 'tab': 0}, mode)
+                                   'riding': mode == 'ride', 'screen': 'map'}, mode)
 
     def test_wrong_or_missing_state_fails(self):
         for report in ({}, {'mode': 'bikes'}, {'url': 'youcantparkthere://ride', 'accepted': True,
-                        'demo': True, 'mode': 'docks', 'riding': False, 'tab': 0}):
+                        'demo': True, 'mode': 'docks', 'riding': False, 'screen': 'map'}):
             with self.assertRaises(RuntimeError):
                 smoke.validate_report(report, 'ride')
 

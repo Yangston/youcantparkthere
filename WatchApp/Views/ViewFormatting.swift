@@ -18,5 +18,8 @@ func distanceText(_ meters: Double) -> String {
 @MainActor
 func availabilityText(_ station: Station, model: AppModel) -> String {
     guard let count = model.freshCount(station) else { return "Availability unknown or station unavailable" }
-    return "\(count) \(model.mode == .docks ? "empty docks" : "bikes")"
+    if model.mode == .docks { return "\(count) empty docks" }
+    if model.bikeFilter == .electric { return "\(count) e-bikes" }
+    let electric = model.freshCount(station, mode: .bikes, bikeFilter: .electric).map(String.init) ?? "unknown"
+    return "\(count) bikes, e-bikes: \(electric)"
 }

@@ -72,7 +72,46 @@ public enum GBFSDecoder {
         }
         return result
     }
-    public static func snapshot(information: Data, status: Data, now: Date = Date()) throws -> StationSnapshot {
+    /// Classify by the operator's metadata, never by a hardcoded model name.
+    static func electricBicycleTypes(_ data: Data) throws -> [String: Bool] {
+        guard let types = try body(object(data))["vehicle_types"] as? [[String: Any]], !types.isEmpty else {
+            throw FeedError.invalid("Missing vehicle types.")
+        }
+        var result: [String: Bool] = [:]
+        var seen = Set<String>()
+        for type in types {
+            guard let id = text(type["vehicle_type_id"]), seen.insert(id).inserted,
+                  let form = type["form_factor"] as? String,
+                  let propulsion = type["propulsion_type"] as? String else {
+                throw FeedError.invalid("Invalid vehicle type metadata.")
+            }
+            if form != "bicycle" { result[id] = false }
+            else if ["electric_assist", "electric"].contains(propulsion) { result[id] = true }
+            else if propulsion == "human" { result[id] = false }
+            // Unknown bicycle propulsion stays unclassified, not silently manual.
+        }
+        return result
+    }
+    static func electricCount(_ status: [String: Any], types: [String: Bool]?) -> Int? {
+        guard let types, !types.isEmpty,
+              let rows = status["vehicle_types_available"] as? [[String: Any]],
+              let total = integer(status["num_vehicles_available"] ?? status["num_bikes_available"]) else { return nil }
+        var seen = Set<String>(), sum = 0, electric = 0
+        for row in rows {
+            guard let id = text(row["vehicle_type_id"]), seen.insert(id).inserted,
+                  let count = integer(row["count"]), let isElectric = types[id] else { return nil }
+            let (newSum, overflow) = sum.addingReportingOverflow(count)
+            guard !overflow, newSum <= total else { return nil }
+            sum = newSum
+            if isElectric { electric += count } // Bounded by validated sum.
+        }
+        let electricIDs = Set(types.filter { $0.value }.map { $0.key })
+        // Toronto omits some zero-count types. Infer their zero only when the
+        // complete breakdown accounts for every available vehicle.
+        guard electricIDs.isSubset(of: seen) || sum == total else { return nil }
+        return electric
+    }
+    public static func snapshot(information: Data, status: Data, vehicleTypes: Data? = nil, now: Date = Date()) throws -> StationSnapshot {
         let infoRoot = try object(information), statusRoot = try object(status)
         guard let infos = try body(infoRoot)["stations"] as? [[String: Any]],
               let statuses = try body(statusRoot)["stations"] as? [[String: Any]],
@@ -80,6 +119,7 @@ public enum GBFSDecoder {
             throw FeedError.invalid("Missing stations or publication timestamp.")
         }
         var lookup: [String: [String: Any]] = [:]
+        let types = vehicleTypes.flatMap { try? electricBicycleTypes($0) }
         for status in statuses { if let id = text(status["station_id"]) { lookup[id] = status } }
         var seen = Set<String>()
         let stations: [Station] = infos.compactMap { info in
@@ -93,7 +133,8 @@ public enum GBFSDecoder {
                            bikes: integer(status["num_vehicles_available"] ?? status["num_bikes_available"]),
                            docks: integer(status["num_docks_available"]),
                            installed: flag(status["is_installed"]), renting: flag(status["is_renting"]),
-                           returning: flag(status["is_returning"]), reportedAt: date(status["last_reported"]))
+                           returning: flag(status["is_returning"]), reportedAt: date(status["last_reported"]),
+                           electricBikes: electricCount(status, types: types))
         }
         guard !stations.isEmpty else { throw FeedError.invalid("No valid stations.") }
         return StationSnapshot(stations: stations, updatedAt: updated, fetchedAt: now,
@@ -125,6 +166,8 @@ public actor GBFSClient {
     private let transport: any FeedTransport
     private var feeds: [String: URL] = [:]
     private var information: Data?
+    private var vehicleTypes: Data?
+    private var typesExpiry = Date.distantPast
     private var infoExpiry = Date.distantPast
     private var cached: StationSnapshot?
     private var nextRequest = Date.distantPast
@@ -150,9 +193,24 @@ public actor GBFSClient {
                 information = try await transport.load(infoURL)
                 infoExpiry = now.addingTimeInterval(21_600)
             }
+            if now >= typesExpiry {
+                if let typesURL = feeds["vehicle_types"] {
+                    do {
+                        let metadata = try await transport.load(typesURL)
+                        _ = try GBFSDecoder.electricBicycleTypes(metadata)
+                        vehicleTypes = metadata
+                        typesExpiry = now.addingTimeInterval(21_600)
+                    } catch is CancellationError { throw CancellationError() }
+                    catch {
+                        // Optional metadata failure must not discard otherwise
+                        // usable dock/total-bike data or invent zero e-bikes.
+                        vehicleTypes = nil; typesExpiry = now.addingTimeInterval(300)
+                    }
+                } else { vehicleTypes = nil; typesExpiry = infoExpiry }
+            }
             guard let information, let statusURL = feeds["station_status"] else { throw FeedError.invalid("Discovery incomplete.") }
             let status = try await transport.load(statusURL)
-            let snapshot = try GBFSDecoder.snapshot(information: information, status: status, now: now)
+            let snapshot = try GBFSDecoder.snapshot(information: information, status: status, vehicleTypes: vehicleTypes, now: now)
             cached = snapshot
             nextRequest = now.addingTimeInterval(snapshot.refreshAfter)
             return snapshot

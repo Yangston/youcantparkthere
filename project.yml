@@ -18,6 +18,7 @@ targets:
     deploymentTarget: "10.0"
     sources:
       - path: WatchApp
+      - path: Shared
       - path: preview/fixtures.json
         buildPhase: resources
     dependencies:
@@ -49,6 +50,7 @@ targets:
     deploymentTarget: "10.0"
     sources:
       - path: Widgets
+      - path: Shared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(PARK_BUNDLE_ID).watchkitapp.widgets

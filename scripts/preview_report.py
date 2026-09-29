@@ -21,9 +21,11 @@ def expected_state(scenario, fixtures=None):
     for original in stations:
         station = {**original, **scenario.get('overrides', {}).get(original['id'], {})}
         operational = station['installed'] and station['returning' if scenario['mode'] == 'docks' else 'renting']
-        counts.append(station[scenario['mode']] if operational and -60 <= scenario['age'] <= 120 else None)
+        field = 'electricBikes' if scenario['mode'] == 'bikes' and scenario.get('bikeFilter') == 'electric' else scenario['mode']
+        counts.append(station.get(field) if operational and -60 <= scenario['age'] <= 120 else None)
     return {'scenario': scenario['id'], 'demo': True, 'mode': scenario['mode'],
-            'riding': scenario['riding'], 'tab': {'nearby': 1, 'settings': 2}.get(scenario['page'], 0),
+            'riding': scenario['riding'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
+            'bikeFilter': scenario.get('bikeFilter', 'all'),
             'counts': counts}
 
 
