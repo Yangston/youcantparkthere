@@ -8,7 +8,7 @@ required = ('APP_STORE_CONNECT_ISSUER_ID', 'APP_STORE_CONNECT_KEY_IDENTIFIER',
             'APPLE_TEAM_ID', 'APP_STORE_APP_ID')
 missing = [name for name in required if not os.environ.get(name, '').strip()]
 if missing:
-    sys.exit('Missing configuration: ' + ', '.join(missing) + '. See docs/SETUP.md. Never paste private keys into issues or chat.')
+    sys.exit('Missing configuration: ' + ', '.join(missing) + '. See docs/APPLE_SIGNING.md. Never paste private keys into issues or chat.')
 if not re.fullmatch(r'[A-Z0-9]{10}', os.environ['APPLE_TEAM_ID']):
     sys.exit('APPLE_TEAM_ID must be your 10-character Apple team ID.')
 if not os.environ['APP_STORE_APP_ID'].isdigit():

@@ -4,6 +4,8 @@
 
 `GBFSClient (actor) → StationSnapshot → AppModel (@MainActor) → SwiftUI map/list/detail`.
 
+Production screens live in `WatchApp/Views/`. `preview/fixtures.json` supplies the local interaction sketch and the Debug simulator preview harness. `SimulatorPreview` configures only in-memory sample state and disables live services in that mode; its fixture loading and presentation logic is compiled out of device/Release builds. The HTML sketch is a separate approximation, while native screenshot reports use the production SwiftUI views. See [DEVELOPMENT.md](DEVELOPMENT.md) for the capture/assertion boundary.
+
 The watch fetches public HTTPS JSON directly from the operator. Discovery supplies station-information and station-status URLs. Only HTTPS feeds on the configured operator hostname are accepted. Information is cached for six hours; status requests obey `max(30 seconds, feed TTL)`. An in-flight task coalesces overlapping requests. The UI's loop checks every five seconds but does **not** request the feed every five seconds. Failed fetches back off up to five minutes.
 
 The decoder accepts GBFS 1/2 numeric timestamps and GBFS 3 ISO-8601 timestamps, localized names, numeric/string IDs, numeric/boolean flags, and `num_vehicles_available` versus legacy `num_bikes_available`. Invalid coordinates are dropped, duplicate IDs do not crash, missing status flags fail closed, and missing counts remain unknown. Only public station inventory is cached to disk; user location and motion samples are not persisted.

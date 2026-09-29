@@ -1,8 +1,12 @@
 import importlib.util
+import json
 from pathlib import Path
 import subprocess
+import sys
 import unittest
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 spec = importlib.util.spec_from_file_location('smoke', Path(__file__).resolve().parents[1] / 'simulator_smoke.py')
 smoke = importlib.util.module_from_spec(spec)
@@ -10,6 +14,22 @@ spec.loader.exec_module(smoke)
 
 
 class SmokeHarnessTests(unittest.TestCase):
+    def test_watch_size_is_numeric(self):
+        self.assertLess(smoke.watch_size({'name': 'Apple Watch SE (40mm)'}),
+                        smoke.watch_size({'name': 'Apple Watch Ultra (49mm)'}))
+
+    def test_inventory_timeout_retries_once_without_hiding_other_failures(self):
+        devices = json.dumps({'devices': {'watchOS': [{'udid': 'test', 'state': 'Booted'}]}})
+        with patch.object(smoke, 'run', side_effect=[subprocess.TimeoutExpired('list', 180), devices, '']) as command:
+            smoke.boot_if_needed('test')
+            self.assertEqual(command.call_count, 3)
+        with patch.object(smoke, 'run', side_effect=subprocess.TimeoutExpired('list', 180)) as command:
+            with self.assertRaises(subprocess.TimeoutExpired): smoke.boot_if_needed('test')
+            self.assertEqual(command.call_count, 2)
+        with patch.object(smoke, 'run', side_effect=subprocess.CalledProcessError(1, 'list')) as command:
+            with self.assertRaises(subprocess.CalledProcessError): smoke.boot_if_needed('test')
+            self.assertEqual(command.call_count, 1)
+
     def test_runtime_versions_are_numeric(self):
         self.assertGreater(smoke.runtime_version('com.apple.CoreSimulator.SimRuntime.watchOS-26-10'),
                            smoke.runtime_version('com.apple.CoreSimulator.SimRuntime.watchOS-26-3'))

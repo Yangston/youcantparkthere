@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Paired-watch install/launch and in-app route assertions; NOT OS widget delivery.
+"""Capture real SwiftUI screens on a disposable paired Watch simulator.
 
-The previous simctl openurl check failed with OSStatus -10814 after a successful
-watch launch. A generic URL dispatch is not the WidgetKit containing-app callback.
-Instead, a DEBUG+simulator-only hook invokes the same production route handler,
-then writes actual model state which this harness MUST validate. Real complication
-taps remain a separate physical-device acceptance test; they are not claimed here.
+Assert in-app routes and fixture state; never claim OS widget delivery, sensor or
+physical-device validation. See docs/DEVELOPMENT.md for coverage and usage.
 """
+import argparse
+from datetime import datetime, timezone
 import json
 import os
 import re
@@ -14,6 +13,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from preview_report import catalog, validate_state
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / 'build'
@@ -54,7 +54,15 @@ def activate_pair(pair_id: str) -> None:
 
 
 def boot_if_needed(udid: str) -> None:
-    devices = json.loads(run('xcrun', 'simctl', 'list', 'devices', '--json', quiet=True))['devices']
+    # Fresh paired runtimes can spend minutes migrating system data. Only retry
+    # this read-only inventory timeout; never retry a crash or state mismatch.
+    for attempt in range(2):
+        try:
+            devices = json.loads(run('xcrun', 'simctl', 'list', 'devices', '--json', timeout=180, quiet=True))['devices']
+            break
+        except subprocess.TimeoutExpired:
+            if attempt: raise
+            print('Simulator inventory timed out during startup; retrying once.', flush=True)
     device = next(item for items in devices.values() for item in items if item['udid'] == udid)
     if device['state'] == 'Shutdown':
         run('xcrun', 'simctl', 'boot', udid)
@@ -105,8 +113,39 @@ def cleanup(*args: str) -> None:
         print(f'Cleanup warning: {exc}', file=sys.stderr)
 
 
+def exercise_preview(watch_id: str, data_dir: Path, scenario: dict) -> None:
+    report = data_dir / 'Library/Caches/preview-state.json'
+    report.unlink(missing_ok=True)
+    output = run('xcrun', 'simctl', 'launch', '--terminate-running-process', watch_id,
+                 BUNDLE, '--preview-scenario', scenario['id'])
+    pid = process_id(output)
+    deadline = time.monotonic() + 45
+    while not report.exists():
+        os.kill(pid, 0)
+        if time.monotonic() >= deadline:
+            raise RuntimeError(f"Missing state report for {scenario['id']}")
+        time.sleep(0.5)
+    validate_state(json.loads(report.read_text()), scenario)
+    time.sleep(3)  # Allow SwiftUI sheet presentation/layout to settle.
+    os.kill(pid, 0)
+    (BUILD / f"preview-{scenario['id']}.json").write_text(report.read_text())
+    run('xcrun', 'simctl', 'io', watch_id, 'screenshot', str(BUILD / f"preview-{scenario['id']}.png"))
+    print(f"PASS: preview {scenario['id']} state and process survival.", flush=True)
+
+
+def watch_size(device: dict) -> int:
+    match = re.search(r'(\d+)mm', device['name'])
+    return int(match.group(1)) if match else 45
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--profile', choices=('compact', 'large'), default='compact')
+    args = parser.parse_args()
     BUILD.mkdir(exist_ok=True)
+    # Repeated local runs must not reuse screenshots from a failed/newer capture.
+    for pattern in ('preview-*.png', 'preview-*.json', 'demo-*.png', 'demo-*.json', 'capture.json'):
+        for path in BUILD.glob(pattern): path.unlink()
     app = BUILD / 'DerivedData/Build/Products/Debug-watchsimulator/ParkWatch.app'
     if not app.is_dir():
         raise RuntimeError(f'Missing simulator build: {app}')
@@ -117,11 +156,16 @@ def main() -> None:
               for item in items if item.get('isAvailable') and item['name'].startswith('iPhone')]
     if not watches or not phones:
         raise RuntimeError('The launch check requires both watchOS and iOS simulator runtimes.')
-    watch_runtime, watch = max(watches, key=lambda item: (runtime_version(item[0]), item[1]['name']))
+    latest = max(runtime_version(item[0]) for item in watches)
+    candidates = [item for item in watches if runtime_version(item[0]) == latest]
+    pick = min if args.profile == 'compact' else max
+    watch_runtime, watch = pick(candidates, key=lambda item: (watch_size(item[1]), item[1]['name']))
     phone_runtime, phone = max(phones, key=lambda item: (
         runtime_version(item[0]) == runtime_version(watch_runtime), runtime_version(item[0]),
         tuple(map(int, re.findall(r'\d+', item[1]['name']))) or (0,)))
     print(f"Smoke pair: {watch['name']} / {watch_runtime} + {phone['name']} / {phone_runtime}", flush=True)
+    (BUILD / 'capture.json').write_text(json.dumps({'device': watch['name'], 'runtime': watch_runtime,
+        'profile': args.profile, 'capturedAt': datetime.now(timezone.utc).isoformat()}))
     created: list[str] = []
     pair_id = None
     try:
@@ -138,6 +182,8 @@ def main() -> None:
         data_dir = Path(run('xcrun', 'simctl', 'get_app_container', watch_id, BUNDLE, 'data').strip())
         for mode in ('docks', 'bikes', 'ride'):
             exercise_route(watch_id, data_dir, mode)
+        for scenario in catalog()['scenarios']:
+            exercise_preview(watch_id, data_dir, scenario)
         print('PASS: install, launch, process survival, and three in-app routing assertions.')
         print('NOT TESTED: OS delivery from a real complication/Siri, GPS, or background wrist-raise behavior.')
     finally:

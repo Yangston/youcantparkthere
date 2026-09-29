@@ -8,10 +8,11 @@ struct YouCantParkThereWatchApp: App {
     @Environment(\.scenePhase) private var scenePhase
     var body: some Scene {
         WindowGroup {
-            RootView().environmentObject(model)
+            RootView().modifier(PreviewPresentation()).environmentObject(model)
                 .task {
                     model.sceneActive(true)
                     SimulatorSmoke.runIfRequested(model: model)
+                    SimulatorPreview.report(model)
                 }
                 .onChange(of: scenePhase) { _, phase in model.sceneActive(phase == .active) }
                 .onOpenURL { url in model.open(url) }

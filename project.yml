@@ -18,6 +18,8 @@ targets:
     deploymentTarget: "10.0"
     sources:
       - path: WatchApp
+      - path: preview/fixtures.json
+        buildPhase: resources
     dependencies:
       - package: ParkCore
       - target: ParkWidgets

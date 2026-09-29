@@ -57,23 +57,25 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             .appendingPathComponent("stations-v1.json")
     }
     override init() {
-        isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
+        isDemo = SimulatorPreview.enabled
         super.init()
         location.delegate = self
         location.activityType = .otherNavigation
         favorites = Set(UserDefaults.standard.stringArray(forKey: "favorites") ?? [])
-        if isDemo { loadDemo() }
+        if isDemo { SimulatorPreview.configure(self) }
         else if let url = cacheURL, let data = try? Data(contentsOf: url) {
             snapshot = try? JSONDecoder().decode(StationSnapshot.self, from: data)
         }
     }
     func sceneActive(_ value: Bool) {
         active = value
+        guard !isDemo else { return }
         now = Date()
         if value { updateAuthorization() }
         configureServices()
     }
     func requestLocation() {
+        guard !isDemo else { return }
         switch location.authorizationStatus {
         case .notDetermined: location.requestWhenInUseAuthorization()
         case .denied, .restricted:
@@ -103,8 +105,8 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         configureServices()
     }
     func tick() {
+        guard !isDemo else { return }
         now = Date()
-        if isDemo { loadDemo() } // Keep explicit demo fixtures usable; never persist them as live data.
         if autoDetect && !riding && active && detector.shouldStart(at: now) { startRide() }
         if let since = ridingSince, now.timeIntervalSince(since) > 5_400 {
             stopRide(); error = "Ride mode stopped after 90 minutes to save battery. Start it again to continue."
@@ -156,6 +158,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     private func configureServices() {
+        guard !isDemo else { return }
         let authorized = location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways
         if !isDemo && authorized && (active || riding) {
             location.desiredAccuracy = riding ? kCLLocationAccuracyNearestTenMeters : kCLLocationAccuracyHundredMeters
@@ -225,21 +228,5 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if (error as? CLError)?.code != .locationUnknown { self.error = "GPS unavailable. Distances may use your last position." }
-    }
-    private func loadDemo() {
-        let date = Date()
-        origin = .toronto; locationDate = date
-        let samples: [(String, Double, Double, Int, Int)] = [
-            ("City Hall", 43.6538, -79.3841, 4, 12),
-            ("Queen / Bay", 43.6511, -79.3815, 9, 0),
-            ("Dundas / University", 43.6546, -79.3890, 6, 3),
-            ("Yonge / Dundas", 43.6560, -79.3802, 12, 8)
-        ]
-        snapshot = StationSnapshot(stations: samples.enumerated().map { index, item in
-            Station(id: "demo-\(index)", name: item.0,
-                    coordinate: Coordinate(latitude: item.1, longitude: item.2),
-                    bikes: item.3, docks: item.4, installed: true, renting: true,
-                    returning: true, reportedAt: date)
-        }, updatedAt: date, fetchedAt: date)
     }
 }

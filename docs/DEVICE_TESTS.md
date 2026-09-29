@@ -1,9 +1,10 @@
 # Device acceptance checklist
 
-Status: **not yet executed on Stone's physical watch**. Record watch model, watchOS/iOS versions, network path, build number, and results when testing. Never interact with the screen while moving through traffic.
+Status: **installation and initial launch confirmed by Stone on 29 September 2026**. Stone reported that the app works on the Watch after the first successful beta delivery. Exact installed build, Watch model and OS versions were not supplied; the individual acceptance tests below remain unverified. Record watch model, watchOS/iOS versions, network path, build number, and results when testing. Never interact with the screen while moving through traffic.
 
 | Test | Expected result | Result |
 |---|---|---|
+| Install and initial launch | Native app installs and opens on the physical Watch. | Passed ? user report, 29 September 2026; build/model/OS not supplied |
 | Cold launch, Internet available | Real station names and timestamp, no sample data. | Not run |
 | Deny location | Explicit downtown/no-GPS label; station browsing still works. | Not run |
 | Grant location, fresh GPS | Nearby stations follow position; distances explicitly straight-line. | Not run |

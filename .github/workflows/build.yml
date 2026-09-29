@@ -10,7 +10,30 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test development tools and preview semantics
+        run: |
+          python -B -m unittest discover -s scripts/tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --test preview/tests/logic.test.cjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check preview/app.js
   watch:
+    needs: portable
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [compact, large]
     runs-on: macos-15
     timeout-minutes: 25
     steps:
@@ -63,17 +86,7 @@ jobs:
         id: smoke
         run: |
           set -o pipefail
-          python3 scripts/simulator_smoke.py 2>&1 | tee build/simulator-smoke.log
-      - name: Publish errors as annotations
-        if: failure()
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          for path in Path('build').glob('*.log'):
-              for line in path.read_text(errors='replace').splitlines():
-                  if 'error:' in line.lower() or 'error(' in line.lower():
-                      print('::error::' + line.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
-          PY
+          python3 scripts/simulator_smoke.py --profile "${{ matrix.profile }}" 2>&1 | tee build/simulator-smoke.log
       - name: Write readable check summary
         if: always()
         env:
@@ -96,11 +109,41 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: watch-build
+          name: watch-build-${{ matrix.profile }}
           path: |
             build/*.log
             build/*.png
             build/demo-*.json
+            build/preview-*.json
+            build/capture.json
             build/DerivedData/Build/Products/Debug-watchsimulator/*.app
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Build native preview report (including partial failures)
+        if: always()
+        env:
+          HELPERS: ${{ steps.helpers.outcome }}
+          CORE: ${{ steps.core.outcome }}
+          COMPILE: ${{ steps.compile.outcome }}
+          ARCHIVE: ${{ steps.archive.outcome }}
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: python3 scripts/preview_report.py
+      - name: Save offline preview studio
+        id: preview
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watch-preview-${{ matrix.profile }}
+          path: build/preview/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Link preview from run summary
+        if: always()
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.artifact-url }}
+          PROFILE: ${{ matrix.profile }}
+        run: |
+          echo "### Native preview: $PROFILE" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download preview studio]($PREVIEW_URL). Extract the ZIP and open index.html. Includes source commit, state assertions, screenshots, and baseline comparison." >> "$GITHUB_STEP_SUMMARY"
+          echo "Preview only: no signing, no TestFlight upload, no Watch installation." >> "$GITHUB_STEP_SUMMARY"

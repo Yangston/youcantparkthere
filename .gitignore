@@ -6,6 +6,10 @@ Generated/
 *.xcworkspace/
 .swiftpm/
 .DS_Store
+__pycache__/
+*.py[cod]
+node_modules/
+.preview-browser/
 PhoneApp/Assets.xcassets/
 WatchApp/Assets.xcassets/
 .env
