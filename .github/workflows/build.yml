@@ -1,0 +1,71 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  watch:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Test station logic, decoder, client, and ride detector
+        run: |
+          set -o pipefail
+          mkdir -p build
+          swift test 2>&1 | tee build/tests.log
+      - name: Generate app assets and project
+        run: |
+          python3 scripts/make_assets.py
+          xcodegen generate
+      - name: Build watch simulator and widgets
+        run: |
+          set -o pipefail
+          xcodebuild -project YouCantParkThere.xcodeproj -scheme ParkWatch \
+            -configuration Debug -sdk watchsimulator \
+            -destination 'generic/platform=watchOS Simulator' \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build \
+            2>&1 | tee build/watch-build.log
+      - name: Validate unsigned distribution archive
+        run: |
+          set -o pipefail
+          xcodebuild -project YouCantParkThere.xcodeproj -scheme ParkDistribution \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/YouCantParkThere.xcarchive CODE_SIGNING_ALLOWED=NO archive \
+            2>&1 | tee build/archive.log
+          python3 scripts/check_archive.py build/YouCantParkThere.xcarchive
+      - name: Check operator's live feed separately from deterministic tests
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          swift run ParkFeedCheck 2>&1 | tee build/live-feed.log
+      - name: Publish compiler errors as annotations
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for path in Path('build').glob('*.log'):
+              for line in path.read_text(errors='replace').splitlines():
+                  if 'error:' in line.lower():
+                      print('::error::' + line.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
+          PY
+      - name: Save logs and simulator app
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watch-build
+          path: |
+            build/*.log
+            build/DerivedData/Build/Products/Debug-watchsimulator/*.app
+          if-no-files-found: ignore
+          retention-days: 14
