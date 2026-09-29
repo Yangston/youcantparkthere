@@ -17,6 +17,10 @@ struct DockMapView: View {
                 Spacer(minLength: 0)
                 footer.padding(.bottom, 2)
             }.padding(.horizontal, 6)
+            HStack {
+                Spacer()
+                utilityControls
+            }.padding(.horizontal, 6)
             loadingState
         }
     }
@@ -90,6 +94,12 @@ struct DockMapView: View {
                     .accessibilityLabel(model.bikeFilter == .electric ? "E-bikes only. Show all bikes" : "All bikes. Show e-bikes only")
             }
             Spacer(minLength: 0)
+
+        }
+    }
+
+    private var utilityControls: some View {
+        VStack(spacing: 6) {
             Button { follow = true; recenter(); model.requestLocation() } label: {
                 Image(systemName: "location.fill").font(.system(size: 11)).frame(width: 28, height: 28)
             }.buttonStyle(.plain).background(.regularMaterial, in: Circle())
