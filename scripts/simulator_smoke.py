@@ -36,8 +36,19 @@ def create_device(name: str, template: dict, runtime: str) -> str:
     return output
 
 
+def activate_pair(pair_id: str) -> None:
+    try:
+        run('xcrun', 'simctl', 'pair_activate', pair_id)
+    except subprocess.CalledProcessError as exc:
+        # Some runtimes activate a freshly created pair automatically. Accept only
+        # this documented-by-the-command result; every other error remains fatal.
+        message = (exc.stdout or '') + (exc.stderr or '')
+        if exc.returncode != 37 or 'This pair is already active.' not in message:
+            raise
+        print('The new simulator pair is already active; continuing.', flush=True)
+
+
 def boot_if_needed(udid: str) -> None:
-    # Booting one member of a pair may start the other automatically.
     devices = json.loads(run('xcrun', 'simctl', 'list', 'devices', '--json'))['devices']
     device = next(item for items in devices.values() for item in items if item['udid'] == udid)
     if device['state'] == 'Shutdown':
@@ -58,10 +69,9 @@ def main() -> None:
     if not watches or not phones:
         raise RuntimeError('The launch check requires both watchOS and iOS simulator runtimes.')
     watch_runtime, watch = max(watches, key=lambda item: (runtime_version(item[0]), item[1]['name']))
-    # Prefer matching runtime releases (e.g. watchOS 26.3 + iOS 26.3), then the newest phone.
     phone_runtime, phone = max(phones, key=lambda item: (
         runtime_version(item[0]) == runtime_version(watch_runtime),
-        runtime_version(item[0]), item[1]['name']))
+        runtime_version(item[0]), tuple(map(int, re.findall(r'\d+', item[1]['name']))) or (0,)))
     print(f"Smoke pair: {watch['name']} / {watch_runtime} + {phone['name']} / {phone_runtime}", flush=True)
     created: list[str] = []
     pair_id = None
@@ -70,9 +80,8 @@ def main() -> None:
         created.append(phone_id)
         watch_id = create_device('Park Smoke Watch', watch, watch_runtime)
         created.append(watch_id)
-        # Watch-only apps still need a paired simulator for CoreSimulator launch services.
         pair_id = run('xcrun', 'simctl', 'pair', watch_id, phone_id).strip()
-        run('xcrun', 'simctl', 'pair_activate', pair_id)
+        activate_pair(pair_id)
         boot_if_needed(phone_id)
         boot_if_needed(watch_id)
         run('xcrun', 'simctl', 'list', 'pairs')
@@ -83,7 +92,7 @@ def main() -> None:
             raise RuntimeError('Simulator did not report a launched process ID.')
         pid = int(match.group(1))
         time.sleep(8)
-        os.kill(pid, 0)  # Catch an immediate crash, rather than only checking the launch request.
+        os.kill(pid, 0)
         run('xcrun', 'simctl', 'io', watch_id, 'screenshot', str(BUILD / 'demo-docks.png'))
         for mode in ('bikes', 'ride'):
             run('xcrun', 'simctl', 'openurl', watch_id, f'youcantparkthere://{mode}')
@@ -93,7 +102,6 @@ def main() -> None:
         print('PASS: installed, launched, survived, and handled bike/ride deep links in demo mode.')
         print('Screenshots are review artifacts, not assertions of layout correctness or hardware behavior.')
     finally:
-        # Never erase or unpair the developer's existing simulators. Only remove our disposable pair.
         for udid in reversed(created):
             subprocess.run(['xcrun', 'simctl', 'shutdown', udid], check=False, timeout=30)
         if pair_id:
