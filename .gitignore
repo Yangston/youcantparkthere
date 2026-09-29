@@ -17,3 +17,6 @@ WatchApp/Assets.xcassets/
 *.mobileprovision
 *.ipa
 *.xcarchive/
+testflight-settings.json
+YouCantParkThere-Signing-Setup*/
+YouCantParkThere-Signing-Setup*.zip

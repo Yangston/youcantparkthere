@@ -1,0 +1,25 @@
+name: Windows setup helper
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/setup_testflight.ps1'
+      - 'scripts/test_setup_helper.ps1'
+      - '.github/workflows/setup-helper.yml'
+  pull_request:
+    paths:
+      - 'scripts/setup_testflight.ps1'
+      - 'scripts/test_setup_helper.ps1'
+      - '.github/workflows/setup-helper.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse and test helper without credentials or network writes
+        shell: powershell
+        run: ./scripts/test_setup_helper.ps1
