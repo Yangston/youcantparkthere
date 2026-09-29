@@ -10,6 +10,11 @@ assert len(apps) == 1, f'Expected one iOS watch-only container, found {apps}'
 with (apps[0] / 'Info.plist').open('rb') as f:
     container = plistlib.load(f)
 assert container.get('ITSWatchOnlyContainer') is True, 'Not a watch-only container'
+# App Store Connect checks the distribution container as well as the watch app.
+# ITMS-90683 rejects a container without the embedded app's motion purpose string.
+motion_purpose = container.get('NSMotionUsageDescription')
+assert isinstance(motion_purpose, str) and motion_purpose.strip(), \
+    'Container Info.plist is missing a non-empty NSMotionUsageDescription (ITMS-90683)'
 watches = list((apps[0] / 'Watch').glob('*.app'))
 assert len(watches) == 1, 'Watch app was not embedded'
 with (watches[0] / 'Info.plist').open('rb') as f:

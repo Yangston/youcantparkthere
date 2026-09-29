@@ -12,14 +12,14 @@ Guide updated: **29 September 2026**. Apple/GitHub screen labels can change; off
 
 Verified on **29 September 2026** for this repository:
 
-- [Build and test on `main`](https://github.com/Yangston/youcantparkthere/actions/runs/36624085080) passed for commit `c49d7d0`.
+- [Build and test on `main`](https://github.com/Yangston/youcantparkthere/actions/runs/36630955351) passed for commit `c0184b5`. Recheck CI for the privacy-string fix before uploading again.
 - Apple Developer membership is active and the program agreements are accepted. All three bundle identifiers and the matching root App Store Connect app record are present.
 - The supplied API key matches the active **Team Key** with **App Manager** access. Its issuer/key identifiers match the local configuration.
 - The GitHub `testflight` environment contains all **four secrets** and **three variables** required below. Saved variable values were checked against the supplied configuration and Team ID. Deployment is restricted to the `main` branch, with no tags allowed.
-- A separate distribution signing private key was generated and saved as `CERTIFICATE_PRIVATE_KEY`. Both local private keys passed OpenSSL validation, and the supplied settings passed `scripts/check_signing.py`. GitHub does not reveal saved secret values; successful Apple signing is still unverified.
-- TestFlight currently shows **No Builds**, and no internal testing group is configured. No physical-device tests have been run.
+- A separate distribution signing private key was generated and saved as `CERTIFICATE_PRIVATE_KEY`. Both local private keys passed OpenSSL validation, and the supplied settings passed `scripts/check_signing.py`. The [first signed upload](https://github.com/Yangston/youcantparkthere/actions/runs/36630970205) succeeded, but Apple subsequently rejected build **1.1** with **ITMS-90683** because `ParkContainer.app` lacked `NSMotionUsageDescription`.
+- The container purpose string is now defined in `project.yml`, and `scripts/check_archive.py` rejects an archive without it before export/upload. Apple processing must succeed for a replacement build before installation. No physical-device tests have been run.
 
-**Next: start at [stage 8](#8-run-the-testflight-upload)**, then complete stages 9–11. The first signed upload retrieves or creates the distribution certificate and provisioning profiles. Do not repeat enrollment, identifier registration, or key generation for this setup.
+**Next: start a new run at [stage 8](#8-run-the-testflight-upload)** on the corrected `main` commit, then complete stages 9–11. A new workflow run generates a new build number; rerunning the old commit would upload the old configuration. Do not repeat enrollment, identifier registration, or key generation for this setup.
 
 The Windows automated setup helper, its tests/workflow, and its separate guide have been removed. This guide and the manual **Upload to TestFlight** workflow remain the supported path. Local `.p8`, `.pem`, and `testflight-settings.json` files are ignored by Git; keep private backups outside the repository and never force-add them. No credential values belong in this guide.
 

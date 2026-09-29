@@ -74,6 +74,7 @@ targets:
         CFBundleDisplayName: You Can't Park There
         ITSWatchOnlyContainer: true
         LSApplicationLaunchProhibited: true
+        NSMotionUsageDescription: Detect cycling on your Apple Watch while the watch app is running so it can switch to the parking map when you enable cycling detection. Motion data stays on your watch.
         ITSAppUsesNonExemptEncryption: false
     dependencies:
       - target: ParkWatch
