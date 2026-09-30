@@ -442,12 +442,13 @@ main {
   justify-content: space-between;
   align-items: center;
   gap: 4px;
-  padding: 0 0 0 26px;
+  padding: 0;
   font-size: 7px;
   color: #afb9b2;
   align-items: flex-end;
 }
 .map-bottom > div {
+  margin-bottom: 14px;
   padding: 3px 4px;
   border-radius: 9px;
   background: #141e18ec;

@@ -127,8 +127,6 @@ struct DockMapView: View {
                 }.buttonStyle(.plain).background(.regularMaterial, in: Capsule())
             }
             HStack(alignment: .bottom, spacing: 4) {
-                // Leave MapKit's lower-left attribution unobstructed.
-                Spacer().frame(width: 26)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(model.locationLabel).lineLimit(2)
                         .foregroundStyle(model.isDemo ? .orange : .primary)
@@ -137,6 +135,8 @@ struct DockMapView: View {
                 }.font(.system(size: 8)).lineLimit(1).minimumScaleFactor(0.8)
                     .padding(.horizontal, 4).padding(.vertical, 3)
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+                    // Keep the badge at the left edge, above MapKit attribution.
+                    .padding(.bottom, 14)
                 Spacer(minLength: 0)
                 Button { model.riding ? model.stopRide() : model.startRide() } label: {
                     Label(model.riding ? "End" : "Ride", systemImage: model.riding ? "stop.fill" : "bicycle")
