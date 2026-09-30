@@ -7,7 +7,7 @@
       ...(scenario.overrides?.[s.id] || {}),
     }));
   }
-  function count(station, mode, age, bikeFilter = "all") {
+  function count(station, mode, age) {
     if (
       age < -60 ||
       age > 120 ||
@@ -15,11 +15,11 @@
       !station[mode === "docks" ? "returning" : "renting"]
     )
       return null;
-    return (
-      station[
-        mode === "bikes" && bikeFilter === "electric" ? "electricBikes" : mode
-      ] ?? null
-    );
+    return station[mode] ?? null;
+  }
+  function electricCount(station, age) {
+    if (age < -60 || age > 120 || !station.installed || !station.renting) return null;
+    return station.electricBikes ?? null;
   }
   function distance(station) {
     const radians = Math.PI / 180;
@@ -45,7 +45,7 @@
       )
       .sort((a, b) => distance(a) - distance(b) || a.id.localeCompare(b.id));
   }
-  const api = { stationsFor, count, distance, nearby };
+  const api = { stationsFor, count, electricCount, distance, nearby };
   if (typeof module !== "undefined") module.exports = api;
   root.ParkPreview = api;
 })(globalThis);

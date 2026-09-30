@@ -14,9 +14,9 @@ struct StationDetailView: View {
                     HStack {
                         inventory("Docks", count: model.freshCount(station, mode: .docks))
                         Spacer()
-                        inventory("Bikes", count: model.freshCount(station, mode: .bikes, bikeFilter: .all))
+                        inventory("Bikes", count: model.freshCount(station, mode: .bikes))
                         Spacer()
-                        inventory("E-bikes", count: model.freshCount(station, mode: .bikes, bikeFilter: .electric))
+                        inventory("E-bikes", count: model.freshElectricCount(station))
                     }
                     Text("E-bikes are included in the total bikes.").font(.caption2).foregroundStyle(.secondary)
                     if !(model.snapshot?.isFresh(station, at: model.now) ?? false) {

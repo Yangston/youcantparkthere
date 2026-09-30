@@ -61,8 +61,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Fresh availability, including a genuinely full station.",
-      "bikeFilter": "all"
+      "description": "Fresh availability, including a genuinely full station."
     },
     {
       "id": "bikes",
@@ -74,21 +73,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "The same stations in bike mode.",
-      "bikeFilter": "all"
-    },
-    {
-      "id": "ebikes",
-      "title": "E-bikes only",
-      "group": "Everyday",
-      "page": "map",
-      "mode": "bikes",
-      "riding": false,
-      "age": 0,
-      "data": true,
-      "gps": true,
-      "description": "Electric bicycle counts, including fresh zero and unknown type data.",
-      "bikeFilter": "electric"
+      "description": "The same stations in bike mode."
     },
     {
       "id": "ride",
@@ -101,8 +86,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "An explicit navigation session with a destination.",
-      "bikeFilter": "all"
+      "description": "An explicit navigation session with a destination."
     },
     {
       "id": "station",
@@ -114,8 +98,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Inventory, favorite and destination actions.",
-      "bikeFilter": "all"
+      "description": "Inventory, favorite and destination actions."
     },
     {
       "id": "settings",
@@ -127,8 +110,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Cycling is opt-in; manual Ride and End remain available.",
-      "bikeFilter": "all"
+      "description": "Cycling is opt-in; manual Ride and End remain available."
     },
     {
       "id": "onboarding",
@@ -140,8 +122,7 @@
       "age": 0,
       "data": true,
       "gps": false,
-      "description": "The actual onboarding content without a system permission prompt.",
-      "bikeFilter": "all"
+      "description": "The actual onboarding content without a system permission prompt."
     },
     {
       "id": "stale",
@@ -153,8 +134,7 @@
       "age": 600,
       "data": true,
       "gps": true,
-      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts.",
-      "bikeFilter": "all"
+      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts."
     },
     {
       "id": "offline",
@@ -167,8 +147,7 @@
       "data": true,
       "gps": false,
       "error": "Offline / feed unavailable. Check the timestamps before riding to a station.",
-      "description": "Cached station locations remain visible; inventory is unknown.",
-      "bikeFilter": "all"
+      "description": "Cached station locations remain visible; inventory is unknown."
     },
     {
       "id": "unavailable",
@@ -188,8 +167,7 @@
           "docks": null
         }
       },
-      "description": "Closed and missing-count stations are gray. Fresh zero stays red.",
-      "bikeFilter": "all"
+      "description": "Closed and missing-count stations are gray. Fresh zero stays red."
     },
     {
       "id": "empty",
@@ -202,8 +180,7 @@
       "data": true,
       "empty": true,
       "gps": true,
-      "description": "A valid feed with no stations is not a network failure.",
-      "bikeFilter": "all"
+      "description": "A valid feed with no stations is not a network failure."
     },
     {
       "id": "error",
@@ -216,8 +193,7 @@
       "data": false,
       "gps": false,
       "error": "Couldn't load stations. Check your connection and retry.",
-      "description": "No station data, a clear error and a retry action.",
-      "bikeFilter": "all"
+      "description": "No station data, a clear error and a retry action."
     },
     {
       "id": "large-text",
@@ -230,11 +206,10 @@
       "data": true,
       "gps": true,
       "largeText": true,
-      "description": "Station details at accessibility text size.",
-      "bikeFilter": "all"
+      "description": "Station details at accessibility text size."
     },
     {
-      "id": "ebikes-unknown",
+      "id": "bike-types-unknown",
       "title": "Unknown e-bike counts",
       "group": "Failures",
       "page": "map",
@@ -243,8 +218,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Missing e-bike data stays unknown while a confirmed zero remains zero.",
-      "bikeFilter": "electric",
+      "description": "Total bikes remain available when e-bike counts are unknown; no lightning indicator is shown.",
       "overrides": {
         "demo-0": {
           "electricBikes": null

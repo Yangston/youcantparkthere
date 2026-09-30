@@ -57,12 +57,12 @@ final class ElectricBikeTests: XCTestCase {
     func testElectricCountsUseTheSameFreshnessAndOperationGates() throws {
         let result = try snapshot(total: 4, rows: [row("electric-A", 4)])
         let station = result.stations[0]
-        XCTAssertEqual(result.usableCount(station, mode: .bikes, at: now, bikeFilter: .electric), 4)
-        XCTAssertNil(result.usableCount(station, mode: .bikes, at: now.addingTimeInterval(121), bikeFilter: .electric))
+        XCTAssertEqual(result.usableElectricCount(station, at: now), 4)
+        XCTAssertNil(result.usableElectricCount(station, at: now.addingTimeInterval(121)))
         let closed = Station(id: station.id, name: station.name, coordinate: station.coordinate,
             bikes: 4, docks: 5, installed: true, renting: false, returning: true, reportedAt: now, electricBikes: 4)
-        XCTAssertNil(result.usableCount(closed, mode: .bikes, at: now, bikeFilter: .electric))
-        XCTAssertEqual(result.usableCount(closed, mode: .docks, at: now, bikeFilter: .electric), 5)
+        XCTAssertNil(result.usableElectricCount(closed, at: now))
+        XCTAssertEqual(result.usableCount(closed, mode: .docks, at: now), 5)
     }
     func testOldCacheWithoutElectricCountsStillDecodes() throws {
         let original = try snapshot(total: 4, rows: [row("electric-A", 4)])

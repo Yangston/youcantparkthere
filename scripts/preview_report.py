@@ -17,15 +17,16 @@ def catalog():
 def expected_state(scenario, fixtures=None):
     fixtures = fixtures or catalog()
     stations = fixtures['stations'] if scenario['data'] and not scenario.get('empty') else []
-    counts = []
+    counts, electric_counts = [], []
     for original in stations:
         station = {**original, **scenario.get('overrides', {}).get(original['id'], {})}
         operational = station['installed'] and station['returning' if scenario['mode'] == 'docks' else 'renting']
-        field = 'electricBikes' if scenario['mode'] == 'bikes' and scenario.get('bikeFilter') == 'electric' else scenario['mode']
-        counts.append(station.get(field) if operational and -60 <= scenario['age'] <= 120 else None)
+        fresh = -60 <= scenario['age'] <= 120
+        counts.append(station.get(scenario['mode']) if operational and fresh else None)
+        electric_counts.append(station.get('electricBikes') if fresh and station['installed'] and station['renting'] else None)
     return {'scenario': scenario['id'], 'demo': True, 'mode': scenario['mode'],
             'riding': scenario['riding'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
-            'bikeFilter': scenario.get('bikeFilter', 'all'),
+            'electricCounts': electric_counts,
             'counts': counts}
 
 

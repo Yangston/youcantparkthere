@@ -21,7 +21,7 @@ struct RideSettingsView: View {
                 .font(.caption2).foregroundStyle(.secondary)
             Button("Refresh stations") { Task { await model.refresh() } }.disabled(model.refreshing)
             Button("Enable / check GPS") { model.requestLocation() }
-            Text("In Bikes mode, tap the lightning button for e-bikes only. A lightning mark on an all-bikes pin means e-bikes are available. A dash means unknown, not zero.")
+            Text("In Bikes mode, a lightning mark means e-bikes are available. Tap a station for the e-bike count. A dash means unknown, not zero.")
                 .font(.caption2).foregroundStyle(.secondary)
             if let error = model.error { Text(error).font(.caption2).foregroundStyle(.orange) }
             Text("Keep the map handy").font(.headline)

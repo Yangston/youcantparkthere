@@ -12,7 +12,6 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var snapshot: StationSnapshot?
     @Published var mode: SearchMode = .docks
     @Published var sheet: MapSheet?
-    @Published var bikeFilter: BikeFilter = .all
     @Published var rideSuggestionStatus = "watchOS chooses when to show the shortcut."
     @Published var origin: Coordinate?
     @Published var locationDate: Date?
@@ -161,8 +160,11 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         return StationPlanner.nearby(snapshot, from: center, mode: mode, now: now,
                                      includeUnavailable: true, limit: limit)
     }
-    func freshCount(_ station: Station, mode: SearchMode? = nil, bikeFilter: BikeFilter? = nil) -> Int? {
-        snapshot?.usableCount(station, mode: mode ?? self.mode, at: now, bikeFilter: bikeFilter ?? self.bikeFilter)
+    func freshElectricCount(_ station: Station) -> Int? {
+        snapshot?.usableElectricCount(station, at: now)
+    }
+    func freshCount(_ station: Station, mode: SearchMode? = nil) -> Int? {
+        snapshot?.usableCount(station, mode: mode ?? self.mode, at: now)
     }
     func refresh() async {
         guard !refreshing, !isDemo, Date() >= nextRefresh else { return }

@@ -36,7 +36,6 @@ enum SimulatorPreview {
             model.origin = scenario.gps ? .toronto : nil
             model.locationDate = scenario.gps ? model.now : nil
             model.mode = scenario.mode == "bikes" ? .bikes : .docks
-            model.bikeFilter = scenario.bikeFilter == "electric" ? .electric : .all
             model.sheet = scenario.page == "settings" ? .settings : scenario.page == "detail" ? .station("demo-0") : nil
             model.ridingSince = scenario.riding ? model.now.addingTimeInterval(-300) : nil
             model.targetID = scenario.target
@@ -59,10 +58,13 @@ enum SimulatorPreview {
         let counts: [Any] = model.snapshot?.stations.map {
             model.freshCount($0).map { $0 as Any } ?? NSNull()
         } ?? []
+        let electricCounts: [Any] = model.snapshot?.stations.map {
+            model.freshElectricCount($0).map { $0 as Any } ?? NSNull()
+        } ?? []
         let value: [String: Any] = [
             "scenario": scenario.id, "demo": model.isDemo, "mode": model.mode.rawValue,
             "riding": model.riding, "screen": model.sheet?.screen ?? "map", "counts": counts,
-            "bikeFilter": model.bikeFilter.rawValue
+            "electricCounts": electricCounts
         ]
         do {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -97,7 +99,6 @@ enum SimulatorPreview {
         let id: String; let page: String; let mode: String; let riding: Bool
         let age: Double; let data: Bool; let gps: Bool
         let target: String?; let error: String?; let empty: Bool?; let largeText: Bool?
-        let bikeFilter: String?
         let overrides: [String: Override]?
     }
     struct Override: Decodable {

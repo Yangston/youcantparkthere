@@ -39,20 +39,15 @@ test("empty and failed loads cannot invent demo stations", () => {
       0,
     );
 });
-test("e-bike mode distinguishes available, zero, unknown and stale counts", () => {
+test("e-bike indicators distinguish available, zero, unknown and stale counts", () => {
   assert.deepEqual(
-    fixtures.stations.map((s) => api.count(s, "bikes", 0, "electric")),
+    fixtures.stations.map((s) => api.electricCount(s, 0)),
     [2, 0, 1, null],
   );
-  assert.equal(api.count(fixtures.stations[0], "bikes", 121, "electric"), null);
+  assert.equal(api.electricCount(fixtures.stations[0], 121), null);
   assert.equal(
-    api.count(
-      { ...fixtures.stations[0], renting: false },
-      "bikes",
-      0,
-      "electric",
-    ),
+    api.electricCount({ ...fixtures.stations[0], renting: false }, 0),
     null,
   );
-  assert.equal(api.count(fixtures.stations[0], "docks", 0, "electric"), 12);
+  assert.equal(api.count(fixtures.stations[0], "docks", 0), 12);
 });

@@ -30,8 +30,10 @@ class PreviewTests(unittest.TestCase):
             preview_report.validate_state(value, self.scenario('stale'))
 
     def test_electric_counts_and_removed_list_screen(self):
-        self.assertEqual(preview_report.expected_state(self.scenario('ebikes'))['counts'], [2, 0, 1, None])
-        self.assertEqual(preview_report.expected_state(self.scenario('ebikes-unknown'))['counts'], [None, 0, None, None])
+        self.assertEqual(preview_report.expected_state(self.scenario('bike-types-unknown'))['counts'], [4, 9, 6, 12])
+        self.assertEqual(preview_report.expected_state(self.scenario('stale'))['electricCounts'], [None] * 4)
+        self.assertEqual(preview_report.expected_state(self.scenario('bikes'))['electricCounts'], [2, 0, 1, None])
+        self.assertEqual(preview_report.expected_state(self.scenario('bike-types-unknown'))['electricCounts'], [None, 0, None, None])
         self.assertEqual(preview_report.expected_state(self.scenario('settings'))['screen'], 'settings')
         self.assertFalse(any(s['page'] == 'nearby' for s in preview_report.catalog()['scenarios']))
 

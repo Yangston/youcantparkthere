@@ -19,7 +19,7 @@ extension AppModel {
         sheet = nil
         switch route {
         case .docks: mode = .docks
-        case .bikes: mode = .bikes; bikeFilter = .all
+        case .bikes: mode = .bikes
         case .ride: startRide()
         }
         return true

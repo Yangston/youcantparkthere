@@ -11,9 +11,10 @@ Status: **installation and initial launch confirmed by Stone on 29 September 202
 | Deny motion | No crash; manual Ride works; permission status is understandable. | Not run |
 | Find Docks / Find Bikes complication | Opens appropriate map mode. Does not advertise stale widget counts. | Not run |
 | Active-Ride Smart Stack suggestion | Start Ride (manual or foreground auto-detection), return to the clock, inspect Smart Stack with suggestions enabled. Record whether watchOS presents the shortcut/hint. End/disable should withdraw relevance; no claim of closed-app cycling detection. | Not run |
-| E-bike toggle and station details | Bikes/all totals, lightning indicator, and e-bike-only counts match fresh operator data. Missing or stale type counts show unknown. | Not run |
+| E-bike indicators and station details | Bike totals, lightning indicators, and station-detail e-bike counts match fresh operator data. Missing or stale type counts show unknown. | Not run |
 | Full-screen map and compact markers | Map pans/zooms; small markers remain tappable; clock, controls, Ride/End and gear remain usable on the physical display. | Not run |
 | Manual Ride, lower/raise wrist | Test actual background-location and Return to Clock behavior. Record interruptions. | Not run |
+| Recenter on open and repeated wake | With location allowed, open the app and verify centering. Pan away, lower/raise the wrist, and verify it follows the latest position again. Move roughly 1 km during an active Ride and repeat; test with Always On enabled and disabled where supported. Confirm a delayed fresh GPS fix updates the center and denied/stale GPS remains labeled. | Not run |
 | 15+ seconds of cycling while open and detection enabled | Switch to parking and enter Ride only on sufficient classifier evidence. | Not run |
 | Walking, car, TTC, standing still | No automatic Ride; capture false positives without storing location history. | Not run |
 | Stop at traffic signal | Ride stays active. | Not run |
