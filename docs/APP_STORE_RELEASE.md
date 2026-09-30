@@ -2,6 +2,17 @@
 
 Prepared 30 September 2026. Target: **1.0.0**, free, **Canada only**, English (Canada), with manual public release after Apple approval. TestFlight upload does not submit an app to App Review or publish it. Use the processed 1.0.0 build recorded in the release handoff, not an older 0.1.0 beta.
 
+## Verified handoff: 30 September 2026
+
+- **TestFlight ready:** version **1.0.0 (8.1)**, source `a2fd99eac94dbabfa354b31e5888fe263f0bfa4e`, enabled in Personal testing. [Unsigned validation](https://github.com/Yangston/youcantparkthere/actions/runs/36771217595) passed on both native Watch sizes, with 36 captures; [signed upload](https://github.com/Yangston/youcantparkthere/actions/runs/36773089913) and Apple processing succeeded.
+- **App Store draft saved:** version 1.0.0 remains **Prepare for Submission**. Build 8.1 is selected; four Apple Watch Ultra 3 screenshots, description, promotional text, keywords, subtitle, Navigation/Travel categories, copyright, review notes and contact details are saved. Sign-in required is off and manual release is selected. No App Review submission has been made.
+- **Distribution prepared:** free, Canada only. The Watch-only container is opted out of Mac and Vision Pro availability.
+- **Pages published with Stone's approval:** [support](https://yangston.github.io/youcantparkthere/) and [privacy policy](https://yangston.github.io/youcantparkthere/privacy.html) are publicly reachable; their URLs are saved in App Store Connect.
+- **Owner steps still open:** physical-device acceptance of this candidate; confirm legal developer identity and any account agreements/DSA requirements; complete age ratings, content-rights information and the App Privacy questionnaire/publish step; review all metadata; then submit for review and manually release after approval. Review-contact details have already been entered privately in App Store Connect and should be checked there.
+- **Local handoff:** `build/app-store-1.0.0.zip` contains the listing, screenshots, icon, website files and this checklist. `build/app-store/provenance.json` records screenshot origin. These generated artifacts are local; regenerate them from the same source commit if needed.
+
+The numbered guide below explains each remaining decision and the settings already prepared, so you can verify them before submission.
+
 ## Already set up
 
 - Paid Apple Developer membership, team and app record: **You Can't Park There**, Apple ID **6817489933**.
