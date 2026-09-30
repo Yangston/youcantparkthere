@@ -8,8 +8,9 @@ struct RideSettingsView: View {
     var body: some View {
         List {
             Text("Ride & settings").font(.headline)
-            Text("Swipe right to return to the map.").font(.caption2).foregroundStyle(.secondary)
-            Text(model.locationLabel).font(.caption2).foregroundStyle(.secondary)
+            if model.locationDenied, let error = model.error {
+                Text(error).font(.caption2).foregroundStyle(.orange)
+            }
             if let start = model.ridingSince { Text(start, style: .timer).font(.title2.monospacedDigit()) }
             Button(model.riding ? "End ride" : "Start ride") { model.riding ? model.stopRide() : model.startRide() }
                 .tint(model.riding ? .red : .orange)
@@ -21,11 +22,12 @@ struct RideSettingsView: View {
             Text(model.rideSuggestionStatus).font(.caption2).foregroundStyle(.secondary)
             Text("Suggests a dock-map shortcut in Smart Stack while Ride is active. Clock-screen hints depend on watchOS and your Smart Stack settings. A closed app cannot detect cycling.")
                 .font(.caption2).foregroundStyle(.secondary)
-            Button("Refresh stations") { Task { await model.refresh() } }.disabled(model.refreshing)
+            Button(model.refreshing ? "Refreshing…" : "Refresh stations") { Task { await model.refresh(manual: true) } }.disabled(model.refreshing)
             Button("Enable / check GPS") { model.requestLocation() }
+            Text(model.locationLabel).font(.caption2).foregroundStyle(.secondary)
             Text("In Bikes mode, a lightning mark means e-bikes are available. Tap a station for the e-bike count. A dash means unknown, not zero.")
                 .font(.caption2).foregroundStyle(.secondary)
-            if let error = model.error { Text(error).font(.caption2).foregroundStyle(.orange) }
+            if !model.locationDenied, let error = model.error { Text(error).font(.caption2).foregroundStyle(.orange) }
             Text("Keep the map handy").font(.headline)
             Text("Watch Settings → General → Return to Clock → this app → After 1 hour. Add the Find Docks complication for one-tap access.")
                 .font(.caption2)

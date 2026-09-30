@@ -92,6 +92,9 @@
   }
   function render() {
     const screen = $("watch-screen");
+    // Settings uses the persistent screen as its swipe surface. Clear those
+    // handlers before rendering Map so a later map drag cannot change pages.
+    screen.onpointerdown = screen.onpointerup = screen.onpointercancel = null;
     screen.classList.toggle("large-text", !!scenario.largeText);
     screen.classList.toggle("sheet-screen", state.page !== "map");
     const data = stations();
@@ -126,14 +129,14 @@
       screen.innerHTML = `<div class="map-screen">
         <div class="sample-map"><svg viewBox="0 0 200 240" preserveAspectRatio="none" aria-hidden="true"><path fill="#344138" d="M0 0h200v240H0z"/><path stroke="#536057" stroke-width="9" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path stroke="#2b342e" stroke-width="3" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path fill="#3e5544" d="M15 45h40v30H15zM105 133h35v45h-35z"/><text x="8" y="209" fill="#a6b6ab" font-size="6">SAMPLE MAP</text></svg>
         <div class="sample-pins"></div>
-        ${!scenario.data ? '<div class="map-overlay">Stations unavailable<button id="retry">Retry sample</button></div>' : scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
-        <div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">↗</button></div>
-        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><span>DEMO · not live</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
-      $("toggle-mode").onclick = () => {
+        ${scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
+        ${!scenario.data ? '<div class="watch-header"><button id="retry">Retry stations</button></div>' : `<div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "\u24c5 Park" : "\u2667 Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">\u2197</button></div>`}
+        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><span>${scenario.data ? "DEMO · not live" : "No station data"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
+      if ($("toggle-mode")) $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
         render();
       };
-      $("gps").onclick = () => {
+      if ($("gps")) $("gps").onclick = () => {
         state.viewport = api.defaultViewport();
         renderPins();
         note("Recentered on the sample location; no browser GPS request.");
@@ -188,7 +191,7 @@
         render();
       };
     } else {
-      screen.innerHTML = `<div class="watch-title">Ride & settings</div><p class="watch-copy">Swipe right to return to the map.</p><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, lightning means e-bikes are available. Tap a station for the breakdown.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
+      screen.innerHTML = `<div class="watch-title">Ride & settings</div><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, lightning means e-bikes are available. Tap a station for the breakdown.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
       bindPageSwipe(screen);
       $("ride").onclick = toggleRide;
       $("detect").onchange = (e) => {
@@ -245,7 +248,6 @@
     map.onpointerup = event => {
       if (drag?.moved) {
         if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
-        map.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); }, { once: true, capture: true });
       }
       drag = null;
     };
@@ -253,8 +255,8 @@
   }
   function bindPageSwipe(surface) {
     let start;
-    surface.addEventListener("pointerdown", e => { start = { x: e.clientX, y: e.clientY }; });
-    surface.addEventListener("pointerup", e => {
+    surface.onpointerdown = e => { start = { x: e.clientX, y: e.clientY }; };
+    surface.onpointerup = e => {
       if (!start) return;
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       start = null;
@@ -264,7 +266,8 @@
       else return;
       e.preventDefault();
       render();
-    });
+    };
+    surface.onpointercancel = () => { start = null; };
   }
   function openStation(id) {
     state.selected = id;

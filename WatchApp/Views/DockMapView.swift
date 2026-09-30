@@ -22,7 +22,7 @@ struct DockMapView: View {
                 Spacer(minLength: 0)
                 footer
             }.padding(.horizontal, 2).zIndex(1)
-            loadingState
+            emptyState
         }
         .onAppear { if model.page == .map { resumeFollowing() } }
         .onChange(of: model.page) { _, page in if page == .map { resumeFollowing() } }
@@ -85,51 +85,58 @@ struct DockMapView: View {
     }
 
     @ViewBuilder
-    private var loadingState: some View {
-        if model.snapshot == nil {
-            VStack(spacing: 5) {
-                if model.refreshing { ProgressView() }
-                Text(model.error == nil ? "Loading stations…" : "Stations unavailable")
-                    .font(.caption2).multilineTextAlignment(.center)
-                if model.error != nil {
-                    Button("Retry") { Task { await model.refresh() } }.frame(minHeight: 44)
-                }
-            }.padding(8).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal, 15)
-        } else if model.snapshot?.stations.isEmpty == true {
+    private var emptyState: some View {
+        if model.snapshot?.stations.isEmpty == true {
             Text("No stations in this snapshot").font(.caption2).multilineTextAlignment(.center)
                 .padding(8).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                 .allowsHitTesting(false)
         }
     }
 
+    @ViewBuilder
     private var controls: some View {
-        HStack(spacing: 0) {
-            Button {
-                model.mode = model.mode == .docks ? .bikes : .docks
-                WKInterfaceDevice.current().play(.click)
-            } label: {
-                Label(model.mode.title, systemImage: model.mode.symbol)
-                    .font(.system(size: 12, weight: .bold))
-                    .padding(.horizontal, 6).frame(height: 28)
-                    .background(.regularMaterial, in: Capsule())
-                    .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
-            }.buttonStyle(MapControlButtonStyle())
-                .accessibilityIdentifier("map.mode")
-                .accessibilityHint("Switch between parking and bikes")
-            Spacer(minLength: 0)
-            Button {
-                resumeFollowing(); model.requestLocation()
-                WKInterfaceDevice.current().play(.click)
-            } label: {
-                Image(systemName: "location.fill").font(.system(size: 12))
-                    .frame(width: 28, height: 28)
-                    .background(.regularMaterial, in: Circle())
-                    .frame(width: 44, height: 44).contentShape(Rectangle())
-            }.buttonStyle(MapControlButtonStyle())
-                .accessibilityIdentifier("map.recenter")
-                .accessibilityLabel("Recenter on my location")
-                .accessibilityValue(model.locationLabel)
+        if model.snapshot == nil {
+            if model.error != nil && !model.refreshing {
+                Button { Task { await model.refresh(manual: true) } } label: {
+                    Text("Retry stations").font(.system(size: 12, weight: .bold))
+                        .padding(.horizontal, 8).frame(height: 28)
+                        .foregroundStyle(.orange).background(.regularMaterial, in: Capsule())
+                        .frame(minHeight: 44).contentShape(Rectangle())
+                }.buttonStyle(MapControlButtonStyle()).accessibilityIdentifier("map.retry")
+            } else {
+                HStack(spacing: 4) {
+                    ProgressView()
+                    Text("Loading stations…").font(.system(size: 11))
+                }.frame(height: 44).allowsHitTesting(false)
+            }
+        } else {
+            HStack(spacing: 0) {
+                Button {
+                    model.mode = model.mode == .docks ? .bikes : .docks
+                    WKInterfaceDevice.current().play(.click)
+                } label: {
+                    Label(model.mode.title, systemImage: model.mode.symbol)
+                        .font(.system(size: 12, weight: .bold))
+                        .padding(.horizontal, 6).frame(height: 28)
+                        .background(.regularMaterial, in: Capsule())
+                        .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+                }.buttonStyle(MapControlButtonStyle())
+                    .accessibilityIdentifier("map.mode")
+                    .accessibilityHint("Switch between parking and bikes")
+                Spacer(minLength: 0)
+                Button {
+                    resumeFollowing(); model.requestLocation()
+                    WKInterfaceDevice.current().play(.click)
+                } label: {
+                    Image(systemName: "location.fill").font(.system(size: 12))
+                        .frame(width: 28, height: 28)
+                        .background(.regularMaterial, in: Circle())
+                        .frame(width: 44, height: 44).contentShape(Rectangle())
+                }.buttonStyle(MapControlButtonStyle())
+                    .accessibilityIdentifier("map.recenter")
+                    .accessibilityLabel("Recenter on my location")
+                    .accessibilityValue(model.locationLabel)
+            }
         }
     }
 

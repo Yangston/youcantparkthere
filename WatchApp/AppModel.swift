@@ -175,8 +175,10 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     func freshCount(_ station: Station, mode: SearchMode? = nil) -> Int? {
         snapshot?.usableCount(station, mode: mode ?? self.mode, at: now)
     }
-    func refresh() async {
-        guard !refreshing, !isDemo, Date() >= nextRefresh else { return }
+    func refresh(manual: Bool = false) async {
+        // Explicit retries bypass failure backoff. GBFSClient still coalesces
+        // requests and respects the feed's successful-response TTL.
+        guard !refreshing, !isDemo, manual || Date() >= nextRefresh else { return }
         refreshing = true
         defer { refreshing = false }
         do {
