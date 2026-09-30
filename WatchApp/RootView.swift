@@ -8,36 +8,36 @@ struct RootView: View {
     private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 0) {
-                ZStack {
-                    if model.page == .map {
-                        DockMapView().transition(.move(edge: .leading))
-                    } else {
-                        RideSettingsView()
-                            .padding(.top, max(geometry.safeAreaInsets.top, geometry.size.height * 0.14))
-                            .simultaneousGesture(pageSwipe)
-                            .transition(.move(edge: .trailing))
-                    }
+            ZStack(alignment: .bottom) {
+                if model.page == .map {
+                    DockMapView()
+                        // Tell MapKit to keep attribution above the controls while
+                        // its map background extends through their safe area.
+                        .safeAreaPadding(.bottom, 56)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .contentShape(.interaction, MapPanArea(bottomInset: 56))
+                        .transition(.move(edge: .leading))
+                } else {
+                    RideSettingsView()
+                        .padding(.top, max(geometry.safeAreaInsets.top, geometry.size.height * 0.14))
+                        .frame(width: geometry.size.width, height: max(0, geometry.size.height - 56))
+                        .clipped().contentShape(Rectangle())
+                        .simultaneousGesture(pageSwipe)
+                        .frame(height: geometry.size.height, alignment: .top)
+                        .transition(.move(edge: .trailing))
                 }
-                .frame(width: geometry.size.width, height: max(0, geometry.size.height - 56))
-                .clipped().contentShape(Rectangle())
-                // A separate sibling, not an overlay on MapKit: map pan recognizers
-                // cannot receive touches that begin in the controls or page dots.
+                // This transparent sibling owns the same bottom touch area.
+                // Its background is the live map, not a separately painted bar.
                 BottomNavigationView().frame(height: 56)
+                    .background(Color.clear.contentShape(Rectangle()))
                     .contentShape(Rectangle()).highPriorityGesture(pageSwipe)
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
+            .clipped()
             .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: model.page)
         }
         .ignoresSafeArea()
-        .background {
-            if model.page == .map {
-                LinearGradient(colors: [Color(red: 0.20, green: 0.25, blue: 0.23),
-                                        Color(red: 0.10, green: 0.14, blue: 0.14)],
-                               startPoint: .topLeading, endPoint: .bottomTrailing)
-                    .ignoresSafeArea()
-            } else { Color.black }
-        }
+        .background(.black)
         .tint(.orange)
         .onReceive(timer) { _ in model.tick() }
         .sheet(item: $model.sheet) { sheet in
@@ -57,5 +57,14 @@ struct RootView: View {
                   abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
             model.page = value.translation.width < 0 ? .settings : .map
         }
+    }
+}
+
+/// A map can draw under the footer without receiving its touches.
+private struct MapPanArea: Shape {
+    let bottomInset: CGFloat
+    func path(in rect: CGRect) -> Path {
+        Path(CGRect(x: rect.minX, y: rect.minY, width: rect.width,
+                    height: max(0, rect.height - bottomInset)))
     }
 }

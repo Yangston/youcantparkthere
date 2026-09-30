@@ -18,7 +18,7 @@ This is a native watchOS application, not a web prototype. Stone edits on Window
 - Share deterministic preview cases through `preview/fixtures.json`. Preview hooks must stay Debug + simulator-only; never activate sample data or suppress real permissions in release/device builds.
 - Before signed upload, require successful unsigned CI for the exact main commit. Preview workflows must never receive Apple signing secrets or dispatch TestFlight automatically.
 
-- The bottom controls and page dots must remain outside MapKit view bounds; do not restore an overlapping TabView gesture that needs two fingers. Keep the nearest-30 camera-center cap and tighter default recenter span.
+- The live map must draw behind the transparent bottom controls and page dots. Keep the bottom 56-point touch area as a separate sibling with map hit testing excluded there; do not restore an overlapping TabView gesture that needs two fingers. Keep the nearest-30 camera-center cap and tighter default recenter span.
 
 - Station details use disjoint ordinary-bike and e-bike counts. Do not infer ordinary bikes from an unclassified remainder. Favourites keep the existing `favorites` preference key and use white pin borders; destination/handoff features were removed.
-- Keep MapKit provider attribution visible on the map. App legal/data information belongs in Settings. Individual glass footer controls must preserve the separate map-free swipe area.
+- Keep MapKit provider attribution visible on the map. App legal/data information belongs in Settings. Individual glass footer controls must preserve the separate swipe touch area.

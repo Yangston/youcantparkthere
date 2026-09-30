@@ -2,7 +2,7 @@ import SwiftUI
 import WatchKit
 import ParkCore
 
-/// This strip has its own layout bounds below the map, including the page dots.
+/// Transparent controls and swipe surface over the bottom of the map.
 struct BottomNavigationView: View {
     @EnvironmentObject private var model: AppModel
     var body: some View {

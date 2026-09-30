@@ -960,8 +960,11 @@ footer span:last-child {
 .map-bottom > div { padding: 0; background: transparent; }
 .map-bottom > div span { display: inline-block; padding: 3px; border-radius: 7px; background: #242625; }
 
-/* Individual translucent surfaces; the gesture lane stays outside the map. */
-.map-screen { background: linear-gradient(135deg, #33403b, #1a2424); }
+/* The live map is visible beneath the transparent bottom touch surface. */
+.map-screen { position: relative; background: transparent; }
+.map-screen .map-canvas { position: absolute; inset: 0; }
+.map-screen .bottom-navigation { position: absolute; inset: auto 0 0; z-index: 5; }
+
 .map-bottom #gps span, .map-bottom #toggle-mode span, .map-bottom > div span {
   background: linear-gradient(145deg, #ffffff22, #ffffff0c);
   border: 1px solid #ffffff40;
