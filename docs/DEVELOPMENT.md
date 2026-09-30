@@ -66,7 +66,7 @@ Artifacts expire after 30 days. Keep an extracted known-good preview outside the
 
 - **Windows tooling job:** Python helper/import/report/release-gate tests and JS freshness/inventory semantics.
 - **Two native jobs:** compact and large Watch devices selected from the newest available runtime. Actual model/runtime names are recorded rather than guessed.
-- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 13 scenario state assertions/screenshots > offline preview report.
+- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 15 scenario state assertions/screenshots > offline preview report.
 - **Partial failures:** available screenshots and logs are still uploaded, with failed/missing states visible. CI remains red when any required step fails.
 - **Live feed:** remote outages are diagnostic and do not masquerade as deterministic test failures.
 - **Signed distribution:** a separate manual workflow restricted to `main` and the protected `testflight` environment. It requires green unsigned CI for the exact commit. See RELEASING.md.
@@ -101,3 +101,5 @@ python3 scripts/preview_report.py
 ```
 
 Keep generated projects, assets, build output and signing material ignored. `project.yml` defines bundle metadata and capabilities. Never hand-edit a generated Info.plist as the durable fix.
+
+Map previews include `panned` and `panned-empty` camera presets. `visibleStationIDs` asserts the spatial selection separately from inventory counts. Portable tests exercise moving beyond the former GPS radius, more than 40 visible stations, culling, returning, invalid bounds and longitude wrapping. Native captures verify preset layouts and states; they do not exercise real touch hit testing or swipe arbitration. Retest those on the Watch. The sandbox supports dragging its sample map and swiping the bottom strip between Map and Settings.

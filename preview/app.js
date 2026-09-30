@@ -45,6 +45,7 @@
     state = {
       mode: scenario.mode,
       page: scenario.page,
+      viewport: api.viewportFor(scenario),
       riding: scenario.riding,
       target: scenario.target,
       selected: "demo-0",
@@ -124,26 +125,22 @@
     if (state.page === "map") {
       screen.innerHTML = `<div class="map-screen">
         <div class="sample-map"><svg viewBox="0 0 200 240" preserveAspectRatio="none" aria-hidden="true"><path fill="#344138" d="M0 0h200v240H0z"/><path stroke="#536057" stroke-width="9" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path stroke="#2b342e" stroke-width="3" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path fill="#3e5544" d="M15 45h40v30H15zM105 133h35v45h-35z"/><text x="8" y="209" fill="#a6b6ab" font-size="6">SAMPLE MAP</text></svg>
-        ${data
-          .map((s) => {
-            const c = count(s),
-              e = electricCount(s);
-            return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.target === s.id ? "target" : ""}" data-station="${esc(s.id)}" style="left:${15 + (s.longitude + 79.389) * 6500}%;top:${28 + (43.656 - s.latitude) * 7200}%" aria-label="${esc(s.name)}, ${c === null ? "unknown" : c} ${state.mode}">${c ?? "–"}${state.mode === "bikes" && e > 0 ? "<small>ϟ</small>" : ""}</button>`;
-          })
-          .join("")}
+        <div class="sample-pins"></div>
         ${!scenario.data ? '<div class="map-overlay">Stations unavailable<button id="retry">Retry sample</button></div>' : scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
-        <div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">↗</button><button id="settings" aria-label="Ride and settings">⚙</button></div>
-        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><div class="watch-demo">DEMO</div><span>${scenario.error ? "Connection issue" : "Sample data · not live"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
+        <div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">↗</button></div>
+        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><span>DEMO · not live</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
       $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
         render();
       };
-      $("gps").onclick = () =>
-        note("Sample coordinate only; no browser GPS request.");
-      $("settings").onclick = () => {
-        state.page = "settings";
-        render();
+      $("gps").onclick = () => {
+        state.viewport = api.defaultViewport();
+        renderPins();
+        note("Recentered on the sample location; no browser GPS request.");
       };
+      renderPins();
+      bindMapPan(screen.querySelector(".sample-map"));
+      bindPageSwipe(screen.querySelector(".map-bottom"));
       $("ride").onclick = toggleRide;
       if ($("target")) $("target").onclick = () => openStation(state.target);
       if ($("retry"))
@@ -191,11 +188,8 @@
         render();
       };
     } else {
-      screen.innerHTML = `<button id="back" class="plain">× Close</button><div class="watch-title">Ride & settings</div><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, lightning means e-bikes are available. Tap a station for the breakdown.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
-      $("back").onclick = () => {
-        state.page = "map";
-        render();
-      };
+      screen.innerHTML = `<div class="watch-title">Ride & settings</div><p class="watch-copy">Swipe right to return to the map.</p><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, lightning means e-bikes are available. Tap a station for the breakdown.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
+      bindPageSwipe(screen);
       $("ride").onclick = toggleRide;
       $("detect").onchange = (e) => {
         state.detect = e.target.checked;
@@ -211,7 +205,66 @@
     }
     for (const button of screen.querySelectorAll("[data-station]"))
       button.onclick = () => openStation(button.dataset.station);
+    if (["map", "settings"].includes(state.page)) {
+      screen.insertAdjacentHTML("beforeend", `<div class="watch-pages"><button aria-label="Map page" aria-current="${state.page === "map"}"><span></span></button><button aria-label="Settings page" aria-current="${state.page === "settings"}"><span></span></button></div>`);
+      screen.querySelectorAll(".watch-pages button").forEach((button, index) => {
+        button.onclick = () => { state.page = index ? "settings" : "map"; render(); };
+      });
+    }
     screen.scrollTop = 0;
+  }
+  function renderPins() {
+    const layer = $("watch-screen").querySelector(".sample-pins");
+    if (!layer) return;
+    const visible = api.visibleStations(stations(), state.viewport);
+    layer.innerHTML = visible.map(s => {
+      const c = count(s), e = electricCount(s), point = api.project(s, state.viewport);
+      return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.target === s.id ? "target" : ""}" data-station="${esc(s.id)}" style="left:${point.x}%;top:${point.y}%" aria-label="${esc(s.name)}, ${c ?? "unknown"} ${state.mode}">${c ?? "\u2013"}${state.mode === "bikes" && e > 0 ? "<small>\u03df</small>" : ""}</button>`;
+    }).join("");
+    layer.querySelectorAll("button").forEach(button => { button.onclick = () => openStation(button.dataset.station); });
+    $("interaction-note").textContent = `${visible.length} sample markers rendered. Drag the map to browse; swipe the bottom strip for Settings.`;
+  }
+  function bindMapPan(map) {
+    let drag = null;
+    map.onpointerdown = event => {
+      drag = { x: event.clientX, y: event.clientY, viewport: structuredClone(state.viewport), moved: false };
+    };
+    map.onpointermove = event => {
+      if (!drag) return;
+      const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      if (!drag.moved) map.setPointerCapture(event.pointerId);
+      drag.moved = true;
+      const rect = map.getBoundingClientRect();
+      state.viewport = { ...drag.viewport, center: {
+        latitude: Math.max(-85, Math.min(85, drag.viewport.center.latitude + dy / rect.height * drag.viewport.latitudeSpan)),
+        longitude: ((drag.viewport.center.longitude - dx / rect.width * drag.viewport.longitudeSpan + 540) % 360) - 180
+      }};
+      renderPins();
+    };
+    map.onpointerup = event => {
+      if (drag?.moved) {
+        if (map.hasPointerCapture(event.pointerId)) map.releasePointerCapture(event.pointerId);
+        map.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); }, { once: true, capture: true });
+      }
+      drag = null;
+    };
+    map.onpointercancel = () => { drag = null; };
+  }
+  function bindPageSwipe(surface) {
+    let start;
+    surface.addEventListener("pointerdown", e => { start = { x: e.clientX, y: e.clientY }; });
+    surface.addEventListener("pointerup", e => {
+      if (!start) return;
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      start = null;
+      if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (state.page === "map" && dx < 0) state.page = "settings";
+      else if (state.page === "settings" && dx > 0) state.page = "map";
+      else return;
+      e.preventDefault();
+      render();
+    });
   }
   function openStation(id) {
     state.selected = id;

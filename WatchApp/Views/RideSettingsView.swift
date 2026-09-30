@@ -8,6 +8,8 @@ struct RideSettingsView: View {
     var body: some View {
         List {
             Text("Ride & settings").font(.headline)
+            Text("Swipe right to return to the map.").font(.caption2).foregroundStyle(.secondary)
+            Text(model.locationLabel).font(.caption2).foregroundStyle(.secondary)
             if let start = model.ridingSince { Text(start, style: .timer).font(.title2.monospacedDigit()) }
             Button(model.riding ? "End ride" : "Start ride") { model.riding ? model.stopRide() : model.startRide() }
                 .tint(model.riding ? .red : .orange)

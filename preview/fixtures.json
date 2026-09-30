@@ -227,6 +227,46 @@
           "electricBikes": null
         }
       }
+    },
+    {
+      "id": "panned",
+      "title": "Panned map",
+      "group": "Map browsing",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Camera moved to Dundas / University while GPS remains at City Hall. Offscreen markers are culled.",
+      "viewport": {
+        "center": {
+          "latitude": 43.6546,
+          "longitude": -79.389
+        },
+        "latitudeSpan": 0.001,
+        "longitudeSpan": 0.001
+      }
+    },
+    {
+      "id": "panned-empty",
+      "title": "Outside station coverage",
+      "group": "Map browsing",
+      "page": "map",
+      "mode": "docks",
+      "riding": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "The feed is still cached, but no stations fall in this camera region.",
+      "viewport": {
+        "center": {
+          "latitude": 43.72,
+          "longitude": -79.45
+        },
+        "latitudeSpan": 0.001,
+        "longitudeSpan": 0.001
+      }
     }
   ]
 }

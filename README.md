@@ -16,7 +16,7 @@ Open **http://127.0.0.1:8765**. The preview studio has an interactive behavior s
 1. Make a branch and edit the native app.
 2. Run local checks and explore the interaction sandbox.
 3. Push the branch and open a PR, or manually run **Build and test** for that branch.
-4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 13 states and compare an older capture folder.
+4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 15 states and compare an older capture folder.
 5. Merge to `main`, wait for CI, and manually run **Upload to TestFlight** only when you want a Watch update.
 
 No Apple keys are required for previews. No push or PR automatically uploads to TestFlight.
@@ -31,7 +31,7 @@ No Apple keys are required for previews. No push or PR automatically uploads to 
 
 ## App behavior
 
-- **Park / Bikes:** an edge-to-edge map with compact controls. Tap a marker for details; the gear opens settings. There is no separate nearby-list page.
+- **Park / Bikes:** an edge-to-edge map with compact controls. Tap a marker for details. Drag to browse another area; markers follow the camera. Swipe left across the bottom strip for Settings and right to return. There is no separate nearby-list page.
 - **E-bikes:** Bikes mode shows total bikes, with a lightning mark when e-bikes are available. Tap a station for its e-bike count. Counts use the operator's vehicle-type metadata; unavailable type data stays unknown.
 - **Availability:** green = 3+, yellow = 1-2, red = fresh zero, gray = unknown or unavailable. Stale counts are never shown as fresh inventory.
 - **Ride:** explicit start/end, background navigation location, 90-minute cutoff and five-minute automatic-restart suppression after ending.

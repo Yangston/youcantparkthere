@@ -2,6 +2,15 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const api = require("../logic.js");
 const fixtures = require("../fixtures.json");
+test("panning culls offscreen markers and returning restores them", () => {
+  const all = api.visibleStations(fixtures.stations, api.defaultViewport());
+  assert.equal(all.length, 4);
+  const panned = api.viewportFor(fixtures.scenarios.find(s => s.id === "panned"));
+  assert.deepEqual(api.visibleStations(fixtures.stations, panned).map(s => s.id), ["demo-2"]);
+  const empty = api.viewportFor(fixtures.scenarios.find(s => s.id === "panned-empty"));
+  assert.equal(api.visibleStations(fixtures.stations, empty).length, 0);
+  assert.deepEqual(api.visibleStations(fixtures.stations, api.defaultViewport()), all);
+});
 test("fresh zero, stale, closed and missing counts stay distinct", () => {
   const station = fixtures.stations[1];
   assert.equal(api.count(station, "docks", 0), 0);

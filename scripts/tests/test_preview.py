@@ -29,6 +29,12 @@ class PreviewTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'mismatch'):
             preview_report.validate_state(value, self.scenario('stale'))
 
+    def test_camera_region_changes_visible_stations_without_changing_inventory(self):
+        panned = preview_report.expected_state(self.scenario('panned'))
+        self.assertEqual(panned['visibleStationIDs'], ['demo-2'])
+        self.assertEqual(panned['counts'], [12, 0, 3, 8])
+        self.assertEqual(preview_report.expected_state(self.scenario('panned-empty'))['visibleStationIDs'], [])
+
     def test_electric_counts_and_removed_list_screen(self):
         self.assertEqual(preview_report.expected_state(self.scenario('bike-types-unknown'))['counts'], [4, 9, 6, 12])
         self.assertEqual(preview_report.expected_state(self.scenario('stale'))['electricCounts'], [None] * 4)

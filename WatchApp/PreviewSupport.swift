@@ -4,6 +4,13 @@ import ParkCore
 /// Development fixtures never activate in a physical-device or Release build.
 @MainActor
 enum SimulatorPreview {
+    static var initialViewport: MapViewport? {
+        #if DEBUG && targetEnvironment(simulator)
+        return current?.viewport
+        #else
+        return nil
+        #endif
+    }
     static var enabled: Bool {
         #if DEBUG && targetEnvironment(simulator)
         return ProcessInfo.processInfo.arguments.contains("--demo") || scenarioID != nil
@@ -36,7 +43,9 @@ enum SimulatorPreview {
             model.origin = scenario.gps ? .toronto : nil
             model.locationDate = scenario.gps ? model.now : nil
             model.mode = scenario.mode == "bikes" ? .bikes : .docks
-            model.sheet = scenario.page == "settings" ? .settings : scenario.page == "detail" ? .station("demo-0") : nil
+            model.page = scenario.page == "settings" ? .settings : .map
+            model.sheet = scenario.page == "detail" ? .station("demo-0") : nil
+            model.updateMapViewport(scenario.viewport ?? MapViewport(center: .toronto))
             model.ridingSince = scenario.riding ? model.now.addingTimeInterval(-300) : nil
             model.targetID = scenario.target
             model.error = scenario.error
@@ -63,8 +72,9 @@ enum SimulatorPreview {
         } ?? []
         let value: [String: Any] = [
             "scenario": scenario.id, "demo": model.isDemo, "mode": model.mode.rawValue,
-            "riding": model.riding, "screen": model.sheet?.screen ?? "map", "counts": counts,
-            "electricCounts": electricCounts
+            "riding": model.riding, "screen": model.sheet?.screen ?? model.page.rawValue, "counts": counts,
+            "electricCounts": electricCounts,
+            "visibleStationIDs": model.visibleStations.map(\.id)
         ]
         do {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -100,6 +110,7 @@ enum SimulatorPreview {
         let age: Double; let data: Bool; let gps: Bool
         let target: String?; let error: String?; let empty: Bool?; let largeText: Bool?
         let overrides: [String: Override]?
+        let viewport: MapViewport?
     }
     struct Override: Decodable {
         let returning: Bool?

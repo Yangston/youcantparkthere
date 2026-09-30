@@ -935,3 +935,22 @@ footer span:last-child {
   border-radius: 50%;
   font-size: 11px;
 }
+
+/* The sketch keeps touch targets inside the Watch's usable area. */
+.watch-header { top: 30px; left: 10px; }
+.watch-header button { min-height: 44px; }
+.map-utilities, .map-screen:has(.target-label) .map-utilities { top: 30px; right: 10px; transform: none; }
+.map-utilities button { width: 44px; height: 44px; }
+.map-footer { bottom: 30px; left: 10px; right: 10px; }
+.map-bottom { align-items: flex-start; min-height: 44px; touch-action: pan-y; }
+.map-bottom > div { margin: 8px 0 0; }
+.map-bottom #ride { min-height: 44px; min-width: 44px; }
+.target-label { min-height: 44px; }
+.sample-map { touch-action: none; }
+.sample-pins { position: absolute; inset: 0; }
+.sample-map .pin:after { inset: -12px; }
+.watch-screen button:active { opacity: .55; }
+.watch-pages { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; z-index: 5; }
+.watch-pages button { width: 44px; height: 24px; padding: 0; background: transparent; display: grid; place-items: center; }
+.watch-pages button span { width: 5px; height: 5px; border-radius: 50%; background: #ffffff55; }
+.watch-pages button[aria-current="true"] span { background: white; }

@@ -45,7 +45,24 @@
       )
       .sort((a, b) => distance(a) - distance(b) || a.id.localeCompare(b.id));
   }
-  const api = { stationsFor, count, electricCount, distance, nearby };
+  function defaultViewport() {
+    return { center: { latitude: 43.6532, longitude: -79.3832 }, latitudeSpan: 0.012, longitudeSpan: 0.016 };
+  }
+  function viewportFor(scenario) {
+    return scenario.viewport ? structuredClone(scenario.viewport) : defaultViewport();
+  }
+  function visibleStations(stations, viewport) {
+    return stations.filter(s => {
+      const longitude = Math.abs(((s.longitude - viewport.center.longitude + 540) % 360) - 180);
+      return Math.abs(s.latitude - viewport.center.latitude) <= viewport.latitudeSpan * 0.6
+        && longitude <= viewport.longitudeSpan * 0.6;
+    });
+  }
+  function project(station, viewport) {
+    return { x: 50 + (station.longitude - viewport.center.longitude) / viewport.longitudeSpan * 100,
+      y: 50 - (station.latitude - viewport.center.latitude) / viewport.latitudeSpan * 100 };
+  }
+  const api = { stationsFor, count, electricCount, distance, nearby, defaultViewport, viewportFor, visibleStations, project };
   if (typeof module !== "undefined") module.exports = api;
   root.ParkPreview = api;
 })(globalThis);

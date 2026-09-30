@@ -9,9 +9,12 @@ import RelevanceKit
 @MainActor
 final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     static let shared = AppModel()
-    @Published var snapshot: StationSnapshot?
+    @Published var snapshot: StationSnapshot? { didSet { updateVisibleStations() } }
     @Published var mode: SearchMode = .docks
+    @Published var page: AppPage = .map
     @Published var sheet: MapSheet?
+    @Published private(set) var visibleStations: [Station] = []
+    private(set) var mapViewport = MapViewport(center: .toronto)
     @Published var rideSuggestionStatus = "watchOS chooses when to show the shortcut."
     @Published var origin: Coordinate?
     @Published var locationDate: Date?
@@ -86,18 +89,19 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         case .notDetermined: location.requestWhenInUseAuthorization()
         case .denied, .restricted:
             error = "Enable location for You Can't Park There in your watch's Privacy & Security settings. Downtown browsing still works."
+            page = .settings
         default: configureServices()
         }
     }
     func startRide() {
-        guard !riding else { mode = .docks; sheet = nil; return }
+        guard !riding else { mode = .docks; page = .map; sheet = nil; return }
         if !isDemo && location.authorizationStatus == .notDetermined {
             pendingRide = true; requestLocation(); return
         }
         guard isDemo || location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways else {
             pendingRide = false; requestLocation(); return
         }
-        ridingSince = Date(); mode = .docks; sheet = nil
+        ridingSince = Date(); mode = .docks; page = .map; sheet = nil
         detector.reset()
         // Actual background navigation is configured below. watchOS 7+ ignores
         // the deprecated frontmost-timeout override; Return to Clock is user controlled.
@@ -152,13 +156,18 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         targetID = station.id; arrivedTarget = nil
         targetMonitor = TargetAvailabilityMonitor()
         _ = targetMonitor.update(target: station, snapshot: snapshot, now: now)
-        sheet = nil
+        sheet = nil; page = .map
     }
     func clearTarget() { targetID = nil; arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor() }
-    func mapStations(limit: Int = 40) -> [NearbyStation] {
-        guard let snapshot else { return [] }
-        return StationPlanner.nearby(snapshot, from: center, mode: mode, now: now,
-                                     includeUnavailable: true, limit: limit)
+    func updateMapViewport(_ viewport: MapViewport) {
+        guard viewport.isValid else { return }
+        mapViewport = viewport
+        updateVisibleStations()
+    }
+    private func updateVisibleStations() {
+        let stations = snapshot.map { StationPlanner.visible($0, in: mapViewport) } ?? []
+        // A camera callback with unchanged membership must not rebuild annotations.
+        if stations != visibleStations { visibleStations = stations }
     }
     func freshElectricCount(_ station: Station) -> Int? {
         snapshot?.usableElectricCount(station, at: now)
