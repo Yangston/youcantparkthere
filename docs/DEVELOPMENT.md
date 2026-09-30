@@ -75,6 +75,8 @@ Native previews exercise the same production views and route handler. They do no
 
 A fresh paired simulator may spend minutes migrating system data. The harness allows one retry of a read-only `simctl list devices` timeout; application crashes and incorrect state reports are never retried into a pass. For an infrastructure failure, inspect `simulator-smoke.log`, then rerun the unchanged failed job. Keep the original failure visible.
 
+Between captures, the harness explicitly terminates the app, verifies process exit, and lets the old scene disconnect before the next launch. This avoids combining termination and relaunch in one `simctl` command, which can produce a watchOS "Scene update failed" refusal. Launch failures still fail CI; app/Carousel diagnostic logs are collected when available.
+
 ## Adding or changing a feature
 
 1. Change the production screen in `WatchApp/Views/`, or behavior in `AppModel` / `ParkCore`.

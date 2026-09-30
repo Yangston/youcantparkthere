@@ -76,6 +76,24 @@ def process_id(output: str) -> int:
     return int(match.group(1))
 
 
+def finish_launch(watch_id: str, pid: int) -> None:
+    # A crash before our intentional shutdown must remain a failure.
+    os.kill(pid, 0)
+    run('xcrun', 'simctl', 'terminate', watch_id, BUNDLE)
+    deadline = time.monotonic() + 15
+    while True:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            break
+        if time.monotonic() >= deadline:
+            raise RuntimeError('Simulator app did not exit after termination.')
+        time.sleep(0.1)
+    # Let watchOS disconnect the previous scene before requesting another one.
+    # Combined --terminate-running-process relaunches can be refused by Carousel.
+    time.sleep(1)
+
+
 def validate_report(report: dict, mode: str) -> None:
     expected = {'url': f'youcantparkthere://{mode}', 'accepted': True, 'demo': True,
                 'mode': 'bikes' if mode == 'bikes' else 'docks', 'riding': mode == 'ride', 'screen': 'map'}
@@ -86,7 +104,7 @@ def validate_report(report: dict, mode: str) -> None:
 def exercise_route(watch_id: str, data_dir: Path, mode: str) -> None:
     report = data_dir / 'Library/Caches/simulator-smoke.json'
     report.unlink(missing_ok=True)  # A report left by an earlier launch cannot pass this test.
-    output = run('xcrun', 'simctl', 'launch', '--terminate-running-process', watch_id,
+    output = run('xcrun', 'simctl', 'launch', watch_id,
                  BUNDLE, '--demo', '--smoke-url', f'youcantparkthere://{mode}')
     pid = process_id(output)
     deadline = time.monotonic() + 45
@@ -100,6 +118,7 @@ def exercise_route(watch_id: str, data_dir: Path, mode: str) -> None:
     os.kill(pid, 0)
     (BUILD / f'demo-{mode}.json').write_text(report.read_text())
     run('xcrun', 'simctl', 'io', watch_id, 'screenshot', str(BUILD / f'demo-{mode}.png'))
+    finish_launch(watch_id, pid)
     print(f'PASS: {mode} route reached the expected app state and stayed alive.', flush=True)
 
 
@@ -116,7 +135,7 @@ def cleanup(*args: str) -> None:
 def exercise_preview(watch_id: str, data_dir: Path, scenario: dict) -> None:
     report = data_dir / 'Library/Caches/preview-state.json'
     report.unlink(missing_ok=True)
-    output = run('xcrun', 'simctl', 'launch', '--terminate-running-process', watch_id,
+    output = run('xcrun', 'simctl', 'launch', watch_id,
                  BUNDLE, '--preview-scenario', scenario['id'])
     pid = process_id(output)
     deadline = time.monotonic() + 45
@@ -130,6 +149,7 @@ def exercise_preview(watch_id: str, data_dir: Path, scenario: dict) -> None:
     os.kill(pid, 0)
     (BUILD / f"preview-{scenario['id']}.json").write_text(report.read_text())
     run('xcrun', 'simctl', 'io', watch_id, 'screenshot', str(BUILD / f"preview-{scenario['id']}.png"))
+    finish_launch(watch_id, pid)
     print(f"PASS: preview {scenario['id']} state and process survival.", flush=True)
 
 
@@ -186,6 +206,16 @@ def main() -> None:
             exercise_preview(watch_id, data_dir, scenario)
         print('PASS: install, launch, process survival, and three in-app routing assertions.')
         print('NOT TESTED: OS delivery from a real complication/Siri, GPS, or background wrist-raise behavior.')
+    except Exception:
+        if 'watch_id' in locals():
+            try:
+                diagnostic = run('xcrun', 'simctl', 'spawn', watch_id, 'log', 'show', '--style', 'compact',
+                    '--last', '2m', '--predicate', 'process == "ParkWatch" OR process == "Carousel"',
+                    timeout=30, quiet=True)
+                (BUILD / 'simulator-diagnostics.log').write_text(diagnostic)
+            except (OSError, subprocess.SubprocessError) as error:
+                print(f'Could not collect simulator diagnostics: {type(error).__name__}', file=sys.stderr)
+        raise
     finally:
         for udid in reversed(created):
             cleanup('xcrun', 'simctl', 'shutdown', udid)

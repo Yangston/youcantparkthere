@@ -14,6 +14,22 @@ spec.loader.exec_module(smoke)
 
 
 class SmokeHarnessTests(unittest.TestCase):
+    def test_capture_shutdown_waits_for_exit(self):
+        with patch.object(smoke.os, 'kill', side_effect=[None, ProcessLookupError()]), \
+             patch.object(smoke, 'run') as command, patch.object(smoke.time, 'sleep'):
+            smoke.finish_launch('watch', 123)
+            command.assert_called_once_with('xcrun', 'simctl', 'terminate', 'watch', smoke.BUNDLE)
+
+    def test_crash_before_shutdown_is_not_hidden(self):
+        with patch.object(smoke.os, 'kill', side_effect=ProcessLookupError()), patch.object(smoke, 'run') as command:
+            with self.assertRaises(ProcessLookupError): smoke.finish_launch('watch', 123)
+            command.assert_not_called()
+
+    def test_shutdown_timeout_is_not_a_pass(self):
+        with patch.object(smoke.os, 'kill'), patch.object(smoke, 'run'), \
+             patch.object(smoke.time, 'monotonic', side_effect=[0, 16]):
+            with self.assertRaisesRegex(RuntimeError, 'did not exit'): smoke.finish_launch('watch', 123)
+
     def test_watch_size_is_numeric(self):
         self.assertLess(smoke.watch_size({'name': 'Apple Watch SE (40mm)'}),
                         smoke.watch_size({'name': 'Apple Watch Ultra (49mm)'}))
