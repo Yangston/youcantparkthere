@@ -33,9 +33,14 @@ extension StationPlanner {
     /// Keep the full feed cached, but create annotations only around the camera.
     /// Closed, empty and stale stations still have a place on the map.
     public static func visible(_ snapshot: StationSnapshot, in viewport: MapViewport) -> [Station] {
-        snapshot.stations.filter { viewport.contains($0.coordinate) }
-            .map { ($0, viewport.center.distance(to: $0.coordinate)) }
-            .sorted { $0.1 == $1.1 ? $0.0.id < $1.0.id : $0.1 < $1.1 }
-            .prefix(30).map { $0.0 }
+        let candidates = snapshot.stations.filter { viewport.contains($0.coordinate) }
+        var ranked: [NearbyStation] = candidates.map { station in
+            NearbyStation(station: station, distance: viewport.center.distance(to: station.coordinate))
+        }
+        ranked.sort { left, right in
+            if left.distance == right.distance { return left.id < right.id }
+            return left.distance < right.distance
+        }
+        return ranked.prefix(30).map(\.station)
     }
 }
