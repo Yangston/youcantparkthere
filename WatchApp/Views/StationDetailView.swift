@@ -7,7 +7,7 @@ struct StationDetailView: View {
     var body: some View {
         ScrollView {
             if let station = model.snapshot?.stations.first(where: { $0.id == stationID }) {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(station.name).font(.headline)
                     Text(distanceText(model.center.distance(to: station.coordinate))).font(.caption2)
                     HStack {
@@ -23,10 +23,11 @@ struct StationDetailView: View {
                         Text(model.mode == .docks ? "Not accepting returns" : "Not renting bikes").font(.caption).foregroundStyle(.orange)
                     }
                     Button(model.favorites.contains(station.id) ? "Unfavourite" : "Favourite") { model.toggleFavorite(station.id) }
+                        .font(.caption)
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("station.favorite")
                     Text(model.freshnessLabel).font(.caption2).foregroundStyle(.secondary)
-                }.padding()
+                }.padding(.horizontal, 10).padding(.vertical, 6)
             } else { Text("Station no longer in the feed.").padding() }
         }
     }

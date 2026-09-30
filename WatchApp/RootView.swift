@@ -35,6 +35,7 @@ struct RootView: View {
                 LinearGradient(colors: [Color(red: 0.20, green: 0.25, blue: 0.23),
                                         Color(red: 0.10, green: 0.14, blue: 0.14)],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
+                    .ignoresSafeArea()
             } else { Color.black }
         }
         .tint(.orange)
