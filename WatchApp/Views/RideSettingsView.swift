@@ -29,6 +29,9 @@ struct RideSettingsView: View {
             Text("Watch Settings → General → Return to Clock → this app → After 1 hour. Add the Find Docks complication for one-tap access.")
                 .font(.caption2)
             Text("Detected cycling uses background location for navigation, up to 90 minutes, with a five-minute restart pause after the time limit or opt-out. No workout is recorded. Detection cannot guarantee updates while watchOS suspends the app.").font(.caption2)
+            Text("Legal & data").font(.headline)
+            Link("Apple Maps terms", destination: URL(string: "https://www.apple.com/legal/internet-services/maps/terms-en.html")!)
+                .font(.caption2)
             Text("Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.")
                 .font(.caption2).foregroundStyle(.secondary)
         }

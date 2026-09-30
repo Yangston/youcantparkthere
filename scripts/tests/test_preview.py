@@ -48,6 +48,11 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(preview_report.expected_state(self.scenario('settings'))['screen'], 'settings')
         self.assertFalse(any(s['page'] == 'nearby' for s in preview_report.catalog()['scenarios']))
 
+    def test_separate_bike_counts_and_favourites(self):
+        self.assertEqual(preview_report.expected_state(self.scenario('station'))['standardCounts'], [2, 9, 5, None])
+        self.assertEqual(preview_report.expected_state(self.scenario('stale'))['standardCounts'], [None] * 4)
+        self.assertEqual(preview_report.expected_state(self.scenario('favorites'))['favoriteStationIDs'], ['demo-0'])
+
     def test_missing_and_invalid_captures_are_not_reported_as_success(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

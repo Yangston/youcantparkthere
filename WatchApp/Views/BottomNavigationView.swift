@@ -13,7 +13,7 @@ struct BottomNavigationView: View {
                         .font(.system(size: 8)).lineLimit(2).minimumScaleFactor(0.75)
                         .foregroundStyle(model.isDemo || model.snapshot?.isFresh(at: model.now) != true ? Color.orange : Color.primary)
                         .padding(.horizontal, 3).padding(.vertical, 3)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 7))
+                        .mapGlass(in: RoundedRectangle(cornerRadius: 7))
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Button {
                         model.recenterRequest += 1
@@ -22,7 +22,7 @@ struct BottomNavigationView: View {
                     } label: {
                         Image(systemName: "location.fill").font(.system(size: 12))
                             .frame(width: 28, height: 28)
-                            .background(.regularMaterial, in: Circle())
+                            .mapGlass(in: Circle(), interactive: true)
                             .frame(width: 44, height: 44).contentShape(Rectangle())
                     }.buttonStyle(MapControlButtonStyle())
                         .accessibilityIdentifier("map.recenter")
@@ -34,7 +34,7 @@ struct BottomNavigationView: View {
                     } label: {
                         Text(model.mode.title).font(.system(size: 11, weight: .bold))
                             .padding(.horizontal, 6).frame(height: 28)
-                            .background(.regularMaterial, in: Capsule())
+                            .mapGlass(in: Capsule(), interactive: true)
                             .frame(minWidth: 44, maxWidth: .infinity, minHeight: 44, alignment: .trailing)
                             .contentShape(Rectangle())
                     }.buttonStyle(MapControlButtonStyle())
@@ -57,7 +57,7 @@ struct BottomNavigationView: View {
                     @unknown default: break
                     }
                 }
-        }.frame(maxWidth: .infinity).background(.black)
+        }.frame(maxWidth: .infinity)
             .accessibilityAction(named: model.page == .map ? "Show settings" : "Show map") {
                 model.page = model.page == .map ? .settings : .map
             }

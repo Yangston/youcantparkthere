@@ -32,17 +32,20 @@ public struct Station: Identifiable, Codable, Equatable, Sendable {
     public let bikes: Int?
     public let docks: Int?
     public let electricBikes: Int?
+    public let standardBikes: Int?
     public let installed: Bool
     public let renting: Bool
     public let returning: Bool
     public let reportedAt: Date?
 
     public init(id: String, name: String, coordinate: Coordinate, bikes: Int?, docks: Int?,
-                installed: Bool, renting: Bool, returning: Bool, reportedAt: Date?, electricBikes: Int? = nil) {
+                installed: Bool, renting: Bool, returning: Bool, reportedAt: Date?, electricBikes: Int? = nil,
+                standardBikes: Int? = nil) {
         self.id = id; self.name = name; self.coordinate = coordinate
         self.bikes = bikes; self.docks = docks; self.installed = installed
         self.renting = renting; self.returning = returning; self.reportedAt = reportedAt
         self.electricBikes = electricBikes
+        self.standardBikes = standardBikes
     }
     public func count(for mode: SearchMode) -> Int? {
         mode == .docks ? docks : bikes
@@ -76,6 +79,10 @@ public struct StationSnapshot: Codable, Equatable, Sendable {
     public func usableElectricCount(_ station: Station, at now: Date) -> Int? {
         guard isFresh(station, at: now), station.operational(for: .bikes) else { return nil }
         return station.electricBikes
+    }
+    public func usableStandardCount(_ station: Station, at now: Date) -> Int? {
+        guard isFresh(station, at: now), station.operational(for: .bikes) else { return nil }
+        return station.standardBikes
     }
 }
 
@@ -134,21 +141,5 @@ public struct CyclingDetector: Sendable {
     public mutating func reset() { cyclingSince = nil; nonCyclingSince = nil; lastEvidence = nil }
     public mutating func suppress(at now: Date) {
         reset(); suppressedUntil = now.addingTimeInterval(300)
-    }
-}
-
-/// Alerts require a *fresh*, previously available target. A network failure is not a full dock.
-public struct TargetAvailabilityMonitor: Sendable {
-    private var targetID: String?
-    private var previousCount: Int?
-    public init() {}
-    public mutating func update(target: Station?, snapshot: StationSnapshot?, now: Date) -> Bool {
-        guard let target, let snapshot else { targetID = nil; previousCount = nil; return false }
-        if targetID != target.id { targetID = target.id; previousCount = nil }
-        guard let count = snapshot.usableCount(target, mode: .docks, at: now) else {
-            previousCount = nil; return false
-        }
-        defer { previousCount = count }
-        return count == 0 && (previousCount ?? 0) > 0
     }
 }

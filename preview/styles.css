@@ -428,7 +428,7 @@ main {
 .sample-map .pin.unknown {
   background: #8c938e !important;
 }
-.sample-map .pin.target {
+.sample-map .pin.favorite {
   outline: 2px solid white;
   outline-offset: 1px;
 }
@@ -467,18 +467,6 @@ main {
   font-size: 7px;
   color: var(--orange);
   margin: 4px 0 0;
-}
-.target-label {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 8px !important;
-  text-align: left;
-  width: 100%;
-  margin-bottom: 3px;
-  background: #141e18ec !important;
-  color: #fff;
 }
 .map-overlay {
   position: absolute;
@@ -923,9 +911,6 @@ footer span:last-child {
   flex-direction: column;
   gap: 5px;
 }
-.map-screen:has(.target-label) .map-utilities {
-  top: 42%;
-}
 .map-utilities button {
   width: 26px;
   height: 26px;
@@ -939,13 +924,11 @@ footer span:last-child {
 /* The sketch keeps touch targets inside the Watch's usable area. */
 .watch-header { top: 30px; left: 10px; }
 .watch-header button { min-height: 44px; }
-.map-utilities, .map-screen:has(.target-label) .map-utilities { top: 30px; right: 10px; transform: none; }
 .map-utilities button { width: 44px; height: 44px; }
 .map-footer { bottom: 30px; left: 10px; right: 10px; }
 .map-bottom { align-items: flex-start; min-height: 44px; touch-action: pan-y; }
 .map-bottom > div { margin: 8px 0 0; }
 .map-bottom #ride { min-height: 44px; min-width: 44px; }
-.target-label { min-height: 44px; }
 .sample-map { touch-action: none; }
 .sample-pins { position: absolute; inset: 0; }
 .sample-map .pin:after { inset: -12px; }
@@ -958,12 +941,11 @@ footer span:last-child {
 /* Dedicated touch strip: the map element ends above the controls and dots. */
 .map-screen { display: flex; flex-direction: column; height: 100%; }
 .map-canvas { flex: 1; min-height: 0; position: relative; overflow: hidden; }
-.bottom-navigation { flex-shrink: 0; height: 56px; position: relative; background: #080b09; touch-action: none; }
+.bottom-navigation { flex-shrink: 0; height: 56px; position: relative; background: transparent; touch-action: none; }
 .map-bottom { height: 44px; min-height: 44px; align-items: center; gap: 2px; padding: 0 4px; }
 .map-bottom > div { flex: 1; min-width: 0; margin: 0; font-size: 8px; }
 .map-bottom #gps { width: 44px; height: 44px; padding: 0; flex-shrink: 0; }
 .map-bottom #toggle-mode { min-width: 44px; height: 44px; flex: 1; padding: 0 4px; }
-.map-canvas .target-label { position: absolute; left: 4px; right: 4px; bottom: 18px; width: calc(100% - 8px); margin: 0; }
 .bottom-navigation .watch-pages { position: static; transform: none; height: 12px; justify-content: center; gap: 0; }
 .bottom-navigation .watch-pages button { height: 12px; width: 36px; }
 .settings-page { overflow: hidden; padding: 0; display: flex; flex-direction: column; }
@@ -977,3 +959,12 @@ footer span:last-child {
 .map-bottom #toggle-mode span { display: grid; place-items: center; min-width: 40px; height: 28px; padding: 0 6px; border-radius: 14px; background: #242625; }
 .map-bottom > div { padding: 0; background: transparent; }
 .map-bottom > div span { display: inline-block; padding: 3px; border-radius: 7px; background: #242625; }
+
+/* Individual translucent surfaces; the gesture lane stays outside the map. */
+.map-screen { background: linear-gradient(135deg, #33403b, #1a2424); }
+.map-bottom #gps span, .map-bottom #toggle-mode span, .map-bottom > div span {
+  background: linear-gradient(145deg, #ffffff22, #ffffff0c);
+  border: 1px solid #ffffff40;
+  box-shadow: inset 0 1px 0 #ffffff18, 0 2px 5px #0002;
+  backdrop-filter: blur(14px);
+}

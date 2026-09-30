@@ -39,6 +39,11 @@
       $("scenarios").append(button);
     }
   }
+  function loadFavorites() {
+    if (scenario.favorites) return new Set(scenario.favorites);
+    try { return new Set(JSON.parse(localStorage.getItem("park-preview-favorites") || "[]")); }
+    catch { return new Set(); }
+  }
   function select(id) {
     scenario =
       fixtures.scenarios.find((s) => s.id === id) || fixtures.scenarios[0];
@@ -47,9 +52,8 @@
       page: scenario.page,
       viewport: api.viewportFor(scenario),
       cycling: scenario.cycling,
-      target: scenario.target,
       selected: "demo-0",
-      favorites: new Set(),
+      favorites: loadFavorites(),
       suggest: true,
       detect: !!scenario.cycling,
     };
@@ -122,7 +126,7 @@
           : "Not requested",
       ],
       ["Location", scenario.gps ? "Sample coordinate" : "No GPS"],
-      ["Destination", state.target ? "Selected" : "None"],
+      ["Favourites", state.favorites.size],
     ]
       .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`)
       .join("");
@@ -132,7 +136,7 @@
         <div class="sample-pins"></div>
         ${scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
         ${!scenario.data ? '<div class="map-overlay"><button id="retry">Retry stations</button></div>' : ""}
-        ${state.target ? `<button id="target" class="target-label">\u2691 ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}</div>
+        </div>
         <div class="bottom-navigation"><div class="map-bottom"><div><span>${scenario.data ? "DEMO \u00b7 not live" : "No station data"}</span></div><button id="gps" aria-label="Recenter"><span>\u2197</span></button><button id="toggle-mode"><span>${state.mode === "docks" ? "Park" : "Bikes"}</span></button></div></div></div>`;
       if ($("toggle-mode")) $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
@@ -146,7 +150,6 @@
       renderPins();
       bindMapPan(screen.querySelector(".sample-map"));
       bindPageSwipe(screen.querySelector(".bottom-navigation"));
-      if ($("target")) $("target").onclick = () => openStation(state.target);
       if ($("retry"))
         $("retry").onclick = () => {
           select("docks");
@@ -160,15 +163,10 @@
         return;
       }
       const docks = count(s, "docks"),
-        bikes = count(s, "bikes"),
+        bikes = api.standardCount(s, scenario.age),
         electric = electricCount(s);
-      screen.innerHTML = `<button id="back" class="plain">× Close</button><div class="watch-title">${esc(s.name)}</div><p class="watch-copy">${distance(s)} · straight line</p><div class="detail-counts"><span><b>${docks ?? "–"}</b>Docks</span><span><b>${bikes ?? "–"}</b>Bikes</span><span><b>${electric ?? "–"}</b>E-bikes</span></div><p class="watch-copy">E-bikes are included in total bikes.</p><button class="primary" id="destination" ${state.target !== s.id && (docks ?? 0) === 0 ? "disabled" : ""}>${state.target === s.id ? "Clear destination" : "Make destination"}</button><button class="wide" id="favorite">${state.favorites.has(s.id) ? "Unfavorite" : "Favorite"}</button><button class="wide" id="maps">Open in Apple Maps</button><p class="watch-copy">DEMO · not live. Counts are not reservations.</p>`;
+      screen.innerHTML = `<button id="back" class="plain">\u00d7 Close</button><div class="watch-title">${esc(s.name)}</div><p class="watch-copy">${distance(s)}</p><div class="detail-counts"><span><b>${docks ?? "\u2013"}</b>Docks</span><span><b>${bikes ?? "\u2013"}</b>Bikes</span><span><b>${electric ?? "\u2013"}</b>E-bikes</span></div><button class="primary" id="favorite">${state.favorites.has(s.id) ? "Unfavourite" : "Favourite"}</button><p class="watch-copy">DEMO \u00b7 not live</p>`;
       $("back").onclick = () => {
-        state.page = "map";
-        render();
-      };
-      $("destination").onclick = () => {
-        state.target = state.target === s.id ? null : s.id;
         state.page = "map";
         render();
       };
@@ -176,9 +174,9 @@
         state.favorites.has(s.id)
           ? state.favorites.delete(s.id)
           : state.favorites.add(s.id);
+        try { localStorage.setItem("park-preview-favorites", JSON.stringify([...state.favorites])); } catch {}
         render();
       };
-      $("maps").onclick = () => note("Apple Maps handoff needs a Watch test.");
     } else if (state.page === "onboarding") {
       screen.innerHTML =
         '<div class="watch-title">Ⓟ<br>You Can’t<br>Park There</div><p class="watch-copy">Find a bike. Find an empty dock. Leave your phone in your pocket.</p><p class="watch-copy">Auto-detection works while the app is running, not from a closed app.</p><button class="primary" id="enable">Enable location</button><button class="wide" id="browse">Browse downtown</button>';
@@ -192,7 +190,7 @@
         render();
       };
     } else {
-      screen.innerHTML = `<div class="settings-content"><div class="watch-title">Settings</div><label class="watch-toggle">Automatic cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.cycling ? "Cycling detected (sample)." : "Not cycling (sample)."} Detection starts while the app can run. It cannot wake a closed app.</p><p class="watch-copy">Stops after sustained non-cycling activity. Turn detection off to stop immediately.</p><label class="watch-toggle">Cycling shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Requests a Smart Stack suggestion after cycling is detected. watchOS controls placement and clock hints.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">Lightning means e-bikes are available.</p><p class="watch-copy">Automatic navigation stops after 90 minutes. No workout is recorded.</p></div><div class="bottom-navigation"><div class="settings-swipe-hint">Swipe right for map</div></div>`;
+      screen.innerHTML = `<div class="settings-content"><div class="watch-title">Settings</div><label class="watch-toggle">Automatic cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.cycling ? "Cycling detected (sample)." : "Not cycling (sample)."} Detection starts while the app can run. It cannot wake a closed app.</p><p class="watch-copy">Stops after sustained non-cycling activity. Turn detection off to stop immediately.</p><label class="watch-toggle">Cycling shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Requests a Smart Stack suggestion after cycling is detected. watchOS controls placement and clock hints.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">Lightning means e-bikes are available.</p><p class="watch-copy">Automatic navigation stops after 90 minutes. No workout is recorded.</p><div class="watch-title">Legal &amp; data</div><p class="watch-copy">Apple Maps terms. Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.</p></div><div class="bottom-navigation"><div class="settings-swipe-hint">Swipe right for map</div></div>`;
       bindPageSwipe(screen.querySelector(".settings-content"));
       bindPageSwipe(screen.querySelector(".bottom-navigation"));
       $("detect").onchange = (e) => {
@@ -225,7 +223,7 @@
     const visible = api.visibleStations(stations(), state.viewport);
     layer.innerHTML = visible.map(s => {
       const c = count(s), e = electricCount(s), point = api.project(s, state.viewport);
-      return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.target === s.id ? "target" : ""}" data-station="${esc(s.id)}" style="left:${point.x}%;top:${point.y}%" aria-label="${esc(s.name)}, ${c ?? "unknown"} ${state.mode}">${c ?? "\u2013"}${state.mode === "bikes" && e > 0 ? "<small>\u03df</small>" : ""}</button>`;
+      return `<button class="pin ${c === null ? "unknown" : c === 0 ? "zero" : c < 3 ? "low" : ""} ${state.favorites.has(s.id) ? "favorite" : ""}" data-station="${esc(s.id)}" style="left:${point.x}%;top:${point.y}%" aria-label="${esc(s.name)}, ${c ?? "unknown"} ${state.mode}${state.favorites.has(s.id) ? ", favourite" : ""}">${c ?? "\u2013"}${state.mode === "bikes" && e > 0 ? "<small>\u03df</small>" : ""}</button>`;
     }).join("");
     layer.querySelectorAll("button").forEach(button => { button.onclick = () => openStation(button.dataset.station); });
     $("interaction-note").textContent = `${visible.length} sample markers rendered. Drag the map to browse; swipe the bottom strip for Settings.`;

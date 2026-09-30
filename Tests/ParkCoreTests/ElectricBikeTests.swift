@@ -31,6 +31,7 @@ final class ElectricBikeTests: XCTestCase {
         let result = try snapshot(total: 9, rows: [row("manual", 3), row("electric-A", 2), row("electric-B", 1), row("scooter", 3)])
         XCTAssertEqual(result.stations[0].bikes, 9)
         XCTAssertEqual(result.stations[0].electricBikes, 3)
+        XCTAssertEqual(result.stations[0].standardBikes, 3) // The other three are scooters.
     }
     func testOmittedZeroTypesRequireAnExhaustiveBreakdown() throws {
         XCTAssertEqual(try snapshot(total: 4, rows: [row("manual", 2), row("electric-A", 2)]).stations[0].electricBikes, 2)
@@ -42,6 +43,7 @@ final class ElectricBikeTests: XCTestCase {
                      [row("electric-A", -1)], [row("electric-A", 5)],
                      [row("electric-A", Int.max), row("electric-B", Int.max)]] {
             XCTAssertNil(try snapshot(total: 4, rows: rows).stations[0].electricBikes)
+            XCTAssertNil(try snapshot(total: 4, rows: rows).stations[0].standardBikes)
         }
         XCTAssertNil(try snapshot(total: 4, rows: nil).stations[0].electricBikes)
     }
@@ -52,26 +54,50 @@ final class ElectricBikeTests: XCTestCase {
             XCTAssertEqual(result.stations[0].bikes, 4)
             XCTAssertEqual(result.stations[0].docks, 5)
             XCTAssertNil(result.stations[0].electricBikes)
+            XCTAssertNil(result.stations[0].standardBikes)
         }
     }
     func testElectricCountsUseTheSameFreshnessAndOperationGates() throws {
         let result = try snapshot(total: 4, rows: [row("electric-A", 4)])
         let station = result.stations[0]
         XCTAssertEqual(result.usableElectricCount(station, at: now), 4)
+        XCTAssertEqual(result.usableStandardCount(station, at: now), 0)
+        XCTAssertNil(result.usableStandardCount(station, at: now.addingTimeInterval(121)))
         XCTAssertNil(result.usableElectricCount(station, at: now.addingTimeInterval(121)))
         let closed = Station(id: station.id, name: station.name, coordinate: station.coordinate,
-            bikes: 4, docks: 5, installed: true, renting: false, returning: true, reportedAt: now, electricBikes: 4)
+            bikes: 4, docks: 5, installed: true, renting: false, returning: true, reportedAt: now, electricBikes: 4, standardBikes: 0)
         XCTAssertNil(result.usableElectricCount(closed, at: now))
+        XCTAssertNil(result.usableStandardCount(closed, at: now))
         XCTAssertEqual(result.usableCount(closed, mode: .docks, at: now), 5)
     }
     func testOldCacheWithoutElectricCountsStillDecodes() throws {
         let original = try snapshot(total: 4, rows: [row("electric-A", 4)])
         var encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(original)) as! [String: Any]
         var stations = encoded["stations"] as! [[String: Any]]
-        stations[0].removeValue(forKey: "electricBikes"); encoded["stations"] = stations
+        stations[0].removeValue(forKey: "electricBikes")
+        stations[0].removeValue(forKey: "standardBikes"); encoded["stations"] = stations
         let restored = try JSONDecoder().decode(StationSnapshot.self, from: data(encoded))
         XCTAssertNil(restored.stations[0].electricBikes)
+        XCTAssertNil(restored.stations[0].standardBikes)
         XCTAssertEqual(restored.stations[0].bikes, 4)
+    }
+    func testIncompleteBreakdownDoesNotTreatRemainderAsOrdinaryBikes() throws {
+        let result = try snapshot(total: 9, rows: [row("electric-A", 2), row("electric-B", 1)])
+        XCTAssertEqual(result.stations[0].electricBikes, 3)
+        XCTAssertNil(result.stations[0].standardBikes)
+        let empty = try snapshot(total: 0, rows: [])
+        XCTAssertEqual(empty.usableStandardCount(empty.stations[0], at: now), 0)
+        XCTAssertEqual(empty.usableElectricCount(empty.stations[0], at: now), 0)
+    }
+    func testPreviousCacheWithOnlyElectricBreakdownKeepsStandardUnknown() throws {
+        let original = try snapshot(total: 4, rows: [row("manual", 2), row("electric-A", 2)])
+        var encoded = try JSONSerialization.jsonObject(with: JSONEncoder().encode(original)) as! [String: Any]
+        var stations = encoded["stations"] as! [[String: Any]]
+        stations[0].removeValue(forKey: "standardBikes"); encoded["stations"] = stations
+        let restored = try JSONDecoder().decode(StationSnapshot.self, from: data(encoded))
+        XCTAssertEqual(restored.stations[0].electricBikes, 2)
+        XCTAssertEqual(restored.stations[0].bikes, 4)
+        XCTAssertNil(restored.stations[0].standardBikes)
     }
     func testOptionalMetadataFailurePreservesStationDataAndBacksOff() async throws {
         let discovery = try data(["data": ["feeds": [

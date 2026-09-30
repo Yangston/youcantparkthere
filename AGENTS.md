@@ -19,3 +19,6 @@ This is a native watchOS application, not a web prototype. Stone edits on Window
 - Before signed upload, require successful unsigned CI for the exact main commit. Preview workflows must never receive Apple signing secrets or dispatch TestFlight automatically.
 
 - The bottom controls and page dots must remain outside MapKit view bounds; do not restore an overlapping TabView gesture that needs two fingers. Keep the nearest-30 camera-center cap and tighter default recenter span.
+
+- Station details use disjoint ordinary-bike and e-bike counts. Do not infer ordinary bikes from an unclassified remainder. Favourites keep the existing `favorites` preference key and use white pin borders; destination/handoff features were removed.
+- Keep MapKit provider attribution visible on the map. App legal/data information belongs in Settings. Individual glass footer controls must preserve the separate map-free swipe area.

@@ -17,10 +17,6 @@ struct DockMapView: View {
         ZStack {
             stationMap
             if model.snapshot == nil { loadingControl }
-            VStack {
-                Spacer(minLength: 0)
-                destinationControl.padding(.horizontal, 4).padding(.bottom, 18)
-            }
             emptyState
         }
         .onAppear { if model.page == .map { resumeFollowing() } }
@@ -60,10 +56,11 @@ struct DockMapView: View {
                             .padding(.horizontal, 3).padding(.vertical, 2)
                             .frame(minWidth: 20, minHeight: 20)
                             .background(pinColor(station), in: Capsule())
-                            .overlay(Capsule().stroke(model.targetID == station.id ? .white : .clear, lineWidth: 2))
+                            .overlay(Capsule().stroke(model.favorites.contains(station.id) ? .white : .clear, lineWidth: 2))
                             .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
                     }.buttonStyle(MapControlButtonStyle())
                         .accessibilityIdentifier("station.\(station.id)")
+                        .accessibilityValue(model.favorites.contains(station.id) ? "Favourite" : "")
                         .accessibilityLabel("\(station.name), \(availabilityText(station, model: model))")
                 }.annotationTitles(.hidden)
             }
@@ -109,23 +106,6 @@ struct DockMapView: View {
                     Text("Loading stations…").font(.system(size: 11))
                 }.frame(height: 44).allowsHitTesting(false)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var destinationControl: some View {
-        if let target = model.target {
-            Button { model.sheet = .station(target.id) } label: {
-                HStack(spacing: 3) {
-                    Image(systemName: "flag.fill")
-                    Text(target.name).lineLimit(1)
-                    Spacer(minLength: 0)
-                    Text(model.freshCount(target, mode: .docks).map { "\($0) P" } ?? "\u{2013} P").bold()
-                }.font(.system(size: 9)).padding(.horizontal, 6).frame(height: 24)
-                    .background(.regularMaterial, in: Capsule())
-                    .frame(minHeight: 44).contentShape(Rectangle())
-            }.buttonStyle(MapControlButtonStyle())
-                .accessibilityIdentifier("map.destination")
         }
     }
 

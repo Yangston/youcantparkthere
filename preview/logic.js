@@ -21,6 +21,10 @@
     if (age < -60 || age > 120 || !station.installed || !station.renting) return null;
     return station.electricBikes ?? null;
   }
+  function standardCount(station, age) {
+    if (age < -60 || age > 120 || !station.installed || !station.renting) return null;
+    return station.standardBikes ?? null;
+  }
   function distance(station, center = { latitude: 43.6532, longitude: -79.3832 }) {
     const radians = Math.PI / 180;
     const a =
@@ -62,7 +66,7 @@
     return { x: 50 + (station.longitude - viewport.center.longitude) / viewport.longitudeSpan * 100,
       y: 50 - (station.latitude - viewport.center.latitude) / viewport.latitudeSpan * 100 };
   }
-  const api = { stationsFor, count, electricCount, distance, nearby, defaultViewport, viewportFor, visibleStations, project };
+  const api = { stationsFor, count, electricCount, standardCount, distance, nearby, defaultViewport, viewportFor, visibleStations, project };
   if (typeof module !== "undefined") module.exports = api;
   root.ParkPreview = api;
 })(globalThis);

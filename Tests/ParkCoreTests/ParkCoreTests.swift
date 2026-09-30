@@ -130,19 +130,6 @@ final class ParkCoreTests: XCTestCase {
         detector.observe(cycling: true, confident: true, conflicting: false, at: now.addingTimeInterval(301))
         XCTAssertTrue(detector.shouldStart(at: now.addingTimeInterval(314)))
     }
-    func testFullTargetAlertFiresOncePerTransition() throws {
-        let available = try fixture(), full = try fixture(docks: 0)
-        var monitor = TargetAvailabilityMonitor()
-        XCTAssertFalse(monitor.update(target: available.stations[0], snapshot: available, now: now))
-        XCTAssertTrue(monitor.update(target: full.stations[0], snapshot: full, now: now))
-        XCTAssertFalse(monitor.update(target: full.stations[0], snapshot: full, now: now))
-    }
-    func testStaleDataDoesNotCauseFullTargetAlert() throws {
-        let available = try fixture(), full = try fixture(docks: 0)
-        var monitor = TargetAvailabilityMonitor()
-        _ = monitor.update(target: available.stations[0], snapshot: available, now: now)
-        XCTAssertFalse(monitor.update(target: full.stations[0], snapshot: full, now: now.addingTimeInterval(130)))
-    }
     func testTTLHasMinimumButRespectsLongServerTTL() throws {
         let result = try GBFSDecoder.snapshot(information: information(), status: status(ttl: 180), now: now)
         XCTAssertEqual(result.refreshAfter, 180)

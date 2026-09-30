@@ -37,7 +37,8 @@ enum SimulatorPreview {
                     bikes: sample.bikes, docks: override?.missingDocks == true ? nil : sample.docks,
                     installed: sample.installed, renting: sample.renting,
                     returning: override?.returning ?? sample.returning, reportedAt: date,
-                    electricBikes: override?.missingElectricBikes == true ? nil : sample.electricBikes)
+                    electricBikes: override?.missingElectricBikes == true ? nil : sample.electricBikes,
+                    standardBikes: override?.missingStandardBikes == true ? nil : sample.standardBikes)
             }
             model.snapshot = scenario.data ? StationSnapshot(stations: stations, updatedAt: date, fetchedAt: date) : nil
             model.origin = scenario.gps ? .toronto : nil
@@ -47,9 +48,8 @@ enum SimulatorPreview {
             model.sheet = scenario.page == "detail" ? .station("demo-0") : nil
             model.updateMapViewport(scenario.viewport ?? MapViewport(center: .toronto))
             model.cyclingSince = scenario.cycling ? model.now.addingTimeInterval(-300) : nil
-            model.targetID = scenario.target
             model.error = scenario.error
-            model.favorites = []
+            model.favorites = Set(scenario.favorites ?? [])
             // Isolate simulator defaults so previous runs cannot change screenshots.
             UserDefaults.standard.set(scenario.cycling, forKey: "autoDetect")
             model.motionStatus = scenario.cycling ? "Cycling detected (sample)" : "Off (sample)"
@@ -71,10 +71,14 @@ enum SimulatorPreview {
         let electricCounts: [Any] = model.snapshot?.stations.map {
             model.freshElectricCount($0).map { $0 as Any } ?? NSNull()
         } ?? []
+        let standardCounts: [Any] = model.snapshot?.stations.map {
+            model.freshStandardCount($0).map { $0 as Any } ?? NSNull()
+        } ?? []
         let value: [String: Any] = [
             "scenario": scenario.id, "demo": model.isDemo, "mode": model.mode.rawValue,
             "cycling": model.cycling, "screen": model.sheet?.screen ?? model.page.rawValue, "counts": counts,
-            "electricCounts": electricCounts,
+            "electricCounts": electricCounts, "standardCounts": standardCounts,
+            "favoriteStationIDs": model.favorites.sorted(),
             "visibleStationIDs": model.visibleStations.map(\.id)
         ]
         do {
@@ -104,12 +108,12 @@ enum SimulatorPreview {
     struct Sample: Decodable {
         let id: String; let name: String; let latitude: Double; let longitude: Double
         let bikes: Int?; let docks: Int?; let installed: Bool; let renting: Bool; let returning: Bool
-        let electricBikes: Int?
+        let electricBikes: Int?; let standardBikes: Int?
     }
     struct Scenario: Decodable {
         let id: String; let page: String; let mode: String; let cycling: Bool
         let age: Double; let data: Bool; let gps: Bool
-        let target: String?; let error: String?; let empty: Bool?; let largeText: Bool?
+        let favorites: [String]?; let error: String?; let empty: Bool?; let largeText: Bool?
         let overrides: [String: Override]?
         let viewport: MapViewport?
         let stations: [Sample]?
@@ -117,12 +121,14 @@ enum SimulatorPreview {
     struct Override: Decodable {
         let returning: Bool?
         let missingDocks: Bool
+        let missingStandardBikes: Bool
         let missingElectricBikes: Bool
-        enum CodingKeys: String, CodingKey { case returning, docks, electricBikes }
+        enum CodingKeys: String, CodingKey { case returning, docks, electricBikes, standardBikes }
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             returning = try values.decodeIfPresent(Bool.self, forKey: .returning)
             missingDocks = try values.contains(.docks) && values.decodeNil(forKey: .docks)
+            missingStandardBikes = try values.contains(.standardBikes) && values.decodeNil(forKey: .standardBikes)
             missingElectricBikes = try values.contains(.electricBikes) && values.decodeNil(forKey: .electricBikes)
         }
     }

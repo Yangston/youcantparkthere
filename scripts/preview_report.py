@@ -18,7 +18,7 @@ def catalog():
 def expected_state(scenario, fixtures=None):
     fixtures = fixtures or catalog()
     stations = scenario.get('stations', fixtures['stations']) if scenario['data'] and not scenario.get('empty') else []
-    counts, electric_counts, visible_ids = [], [], []
+    counts, electric_counts, standard_counts, visible_ids = [], [], [], []
     viewport = scenario.get('viewport', {'center': {'latitude': 43.6532, 'longitude': -79.3832},
                                          'latitudeSpan': 0.009, 'longitudeSpan': 0.012})
     for original in stations:
@@ -27,6 +27,7 @@ def expected_state(scenario, fixtures=None):
         fresh = -60 <= scenario['age'] <= 120
         counts.append(station.get(scenario['mode']) if operational and fresh else None)
         electric_counts.append(station.get('electricBikes') if fresh and station['installed'] and station['renting'] else None)
+        standard_counts.append(station.get('standardBikes') if fresh and station['installed'] and station['renting'] else None)
         longitude = abs((station['longitude'] - viewport['center']['longitude'] + 540) % 360 - 180)
         if abs(station['latitude'] - viewport['center']['latitude']) <= viewport['latitudeSpan'] * 0.6 and longitude <= viewport['longitudeSpan'] * 0.6:
             latitude_delta = math.radians(station['latitude'] - viewport['center']['latitude'])
@@ -36,7 +37,8 @@ def expected_state(scenario, fixtures=None):
             visible_ids.append((distance, station['id']))
     return {'scenario': scenario['id'], 'demo': True, 'mode': scenario['mode'],
             'cycling': scenario['cycling'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
-            'electricCounts': electric_counts,
+            'electricCounts': electric_counts, 'standardCounts': standard_counts,
+            'favoriteStationIDs': sorted(scenario.get('favorites', [])),
             'counts': counts, 'visibleStationIDs': [ident for _, ident in sorted(visible_ids)[:30]]}
 
 

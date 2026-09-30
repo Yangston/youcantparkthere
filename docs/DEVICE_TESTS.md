@@ -7,13 +7,13 @@ Status: **installation and initial launch confirmed by Stone on 29 September 202
 | Install and initial launch | Native app installs and opens on the physical Watch. | Passed - user report, 29 September 2026; build/model/OS not supplied |
 | Cold launch, Internet available | Real station names and timestamp, no sample data. | Not run |
 | Deny location | GPS status is explicit in Settings; recenter opens the permission explanation. Station browsing still works. | Not run |
-| Grant location, fresh GPS | Nearby stations follow position; distances explicitly straight-line. | Not run |
+| Grant location, fresh GPS | Nearby stations follow position; distances update from GPS. | Not run |
 | Deny motion | No crash; map browsing works; permission status is understandable. | Not run |
 | Find Docks / Find Bikes complication | Opens appropriate map mode. Does not advertise stale widget counts. | Not run |
 | Detected-cycling Smart Stack suggestion | Enable automatic cycling, wait for valid detection while the app is running, return to the clock, inspect Smart Stack with suggestions enabled. Record whether watchOS presents the shortcut/hint. Automatic stop/opt-out should withdraw relevance; no claim of closed-app cycling detection. | Not run |
-| E-bike indicators and station details | Bike totals, lightning indicators, and station-detail e-bike counts match fresh operator data. Missing or stale type counts show unknown. | Not run |
+| E-bike indicators and station details | Map bike totals, lightning indicators, and separate station-detail ordinary/e-bike counts match fresh operator data. Missing or stale type counts show unknown. | Not run |
 | Full-screen map and compact markers | Map pans/zooms; markers and controls respond reliably. | User report, 30 September 2026: map works, button presses often do nothing. Exact build/hardware not supplied. Enlarged hit regions and safe-area fix await device retest. |
-| One-finger swipe between Map and Settings | Swipe left across the bottom strip to Settings and right back; dragging the map still pans. No gear button. Verify mode, recenter, destination and station taps. Start drags over the controls, empty bottom-strip space, and both page dots. | User report, 30 September 2026: previous version required two fingers; one finger panned the map. New separate strip awaits device retest. |
+| One-finger swipe between Map and Settings | Swipe left across the bottom strip to Settings and right back; dragging the map still pans. No gear button. Verify mode, recenter and station taps. Start drags over the controls, empty bottom-strip space, and both page dots. | User report, 30 September 2026: previous version required two fingers; one finger panned the map. New separate strip awaits device retest. |
 | Browse a different map region | Pan several kilometres through operator coverage; stations appear around the camera, rather than remaining tied to GPS. Pan back, zoom and confirm freshness/unknown states are preserved. | Not run |
 | Compact update badge | Only data freshness is shown at the lower left. Location context and errors are available on Settings. | Not run |
 | Detected cycling, lower/raise wrist | Test actual background-location and Return to Clock behavior. Record interruptions. | Not run |
@@ -24,10 +24,7 @@ Status: **installation and initial launch confirmed by Stone on 29 September 202
 | Disable automatic cycling, continue moving | Stops background navigation immediately, clears suggestion, and suppresses restart for five minutes. No End button is required. | Not run |
 | Full/disabled station | Zero or unavailable; never offered as available parking. | Not run |
 | Turn off network | Cached map remains; stale counts become unknown; no fabricated success. | Not run |
-| Target becomes full | One warning on fresh positive-to-zero transition; no repeated taps each refresh. | Not run |
-| Within 60 m of chosen available target | One proximity haptic; no claim that the bike is returned. | Not run |
-| Apple Maps handoff | Opens correct station coordinate/name; returning restores session state while process survives. | Not run |
-| Favorite/unfavorite and relaunch | Favorite IDs persist. | Not run |
+| Favorite/unfavorite and relaunch | IDs and white pin outlines persist after relaunch; unfavouriting removes the outline. | Not run |
 | VoiceOver / large text / smallest supported display | Controls announced, counts understandable, no clipped essential actions. | Not run |
 | Watch-only Wi-Fi, paired-phone Internet, cellular where supported | Measure feed/GPS performance on each available connection. | Not run |
 | Other app, low power, workout running | Record OS behavior; app must not claim it can override it. | Not run |
@@ -36,4 +33,4 @@ Status: **installation and initial launch confirmed by Stone on 29 September 202
 | Automatic stop after cycling | Walking/driving/running for 60 seconds stops navigation; ambiguous activity does not claim a definite stop. Record behavior while active and while backgrounded. | Not run |
 | Thirty markers and tighter recenter | Dense regions render at most 30 nearest the map center; dragging changes the selection. Recenter restores the closer default zoom. | Not run |
 
-Deterministic decoder, ranking, freshness, client, detector, and target-alert tests live in `Tests/ParkCoreTests`. CI compilation does not replace any device test above.
+Deterministic decoder, ranking, freshness, client, detector, and favourite persistence tests live in `Tests/ParkCoreTests`. CI compilation does not replace any device test above.

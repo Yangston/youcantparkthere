@@ -20,7 +20,7 @@ Open `http://127.0.0.1:8765`. Stop with Ctrl+C. The server binds to loopback and
 
 | Surface | Use it for | Evidence boundary |
 |---|---|---|
-| Interaction sandbox | Click through modes, station selection, destination, favorites, automatic cycling states, e-bike indicators, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, maps handoff or background execution. Editing SwiftUI does not automatically change this sketch. |
+| Interaction sandbox | Click through modes, station selection, favorites, automatic cycling states, e-bike indicators, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, or background execution. Editing SwiftUI does not automatically change this sketch. |
 | Native captures | Review the actual map/detail/settings/onboarding layouts, compact/large Watch displays, accessibility text, stale/offline/closed/empty/error states | The current SwiftUI app compiled and launched in watchOS Simulator. Scenario state and process survival are asserted. Screenshots still need human visual review. |
 | Physical Watch | Permission prompts, complications/Siri, background behavior, GPS/motion, haptics, battery and connectivity | Record only tests actually performed in DEVICE_TESTS.md. |
 
@@ -85,7 +85,7 @@ Between captures, the harness explicitly terminates the app, verifies process ex
 4. If the interaction flow changes, update the approximate sandbox separately in `preview/app.js`. The shared fixtures prevent data drift; they do not make HTML a SwiftUI renderer.
 5. Review both native device reports and large-text captures, then merge. Record relevant hardware checks when you choose to install a new beta.
 
-The fixture `overrides` supports `returning` and explicitly null `docks` or `electricBikes` values. Bikes mode always shows total bikes; `electricCounts` separately verifies the lightning indicators and detail breakdown. The removed nearby page is not a valid preview screen. Station report/publication ages are equal in these scenarios; finer freshness edge cases live in the Swift unit tests.
+The fixture `overrides` supports `returning` and explicitly null `docks`, `standardBikes` or `electricBikes` values. Bikes mode shows total bikes; `electricCounts` and `standardCounts` separately verify the detail breakdown. `favoriteStationIDs` verifies fixture favourites, whose pins have white outlines. The sandbox saves interactive favourites in localStorage; the explicit favourite scenario resets to its fixture on selection. The removed nearby page is not a valid preview screen. Station report/publication ages are equal in these scenarios; finer freshness edge cases live in the Swift unit tests.
 
 ## Optional local native work on a Mac
 

@@ -73,11 +73,17 @@ public enum GBFSDecoder {
         return result
     }
     /// Classify by the operator's metadata, never by a hardcoded model name.
-    static func electricBicycleTypes(_ data: Data) throws -> [String: Bool] {
+    enum VehicleKind { case standardBicycle, electricBicycle, other, unknown }
+    struct BikeInventory {
+        let electric: Int?
+        let standard: Int?
+        static let unknown = BikeInventory(electric: nil, standard: nil)
+    }
+    static func classifiedVehicleTypes(_ data: Data) throws -> [String: VehicleKind] {
         guard let types = try body(object(data))["vehicle_types"] as? [[String: Any]], !types.isEmpty else {
             throw FeedError.invalid("Missing vehicle types.")
         }
-        var result: [String: Bool] = [:]
+        var result: [String: VehicleKind] = [:]
         var seen = Set<String>()
         for type in types {
             guard let id = text(type["vehicle_type_id"]), seen.insert(id).inserted,
@@ -85,31 +91,34 @@ public enum GBFSDecoder {
                   let propulsion = type["propulsion_type"] as? String else {
                 throw FeedError.invalid("Invalid vehicle type metadata.")
             }
-            if form != "bicycle" { result[id] = false }
-            else if ["electric_assist", "electric"].contains(propulsion) { result[id] = true }
-            else if propulsion == "human" { result[id] = false }
+            if form != "bicycle" { result[id] = .other }
+            else if ["electric_assist", "electric"].contains(propulsion) { result[id] = .electricBicycle }
+            else if propulsion == "human" { result[id] = .standardBicycle }
+            else { result[id] = .unknown }
             // Unknown bicycle propulsion stays unclassified, not silently manual.
         }
         return result
     }
-    static func electricCount(_ status: [String: Any], types: [String: Bool]?) -> Int? {
+    static func bikeCounts(_ status: [String: Any], types: [String: VehicleKind]?) -> BikeInventory {
         guard let types, !types.isEmpty,
               let rows = status["vehicle_types_available"] as? [[String: Any]],
-              let total = integer(status["num_vehicles_available"] ?? status["num_bikes_available"]) else { return nil }
-        var seen = Set<String>(), sum = 0, electric = 0
+              let total = integer(status["num_vehicles_available"] ?? status["num_bikes_available"]) else { return .unknown }
+        var seen = Set<String>(), sum = 0, electric = 0, standard = 0
         for row in rows {
             guard let id = text(row["vehicle_type_id"]), seen.insert(id).inserted,
-                  let count = integer(row["count"]), let isElectric = types[id] else { return nil }
+                  let count = integer(row["count"]), let kind = types[id], kind != .unknown else { return .unknown }
             let (newSum, overflow) = sum.addingReportingOverflow(count)
-            guard !overflow, newSum <= total else { return nil }
+            guard !overflow, newSum <= total else { return .unknown }
             sum = newSum
-            if isElectric { electric += count } // Bounded by validated sum.
+            if kind == .electricBicycle { electric += count }
+            if kind == .standardBicycle { standard += count } // Both bounded by validated sum.
         }
-        let electricIDs = Set(types.filter { $0.value }.map { $0.key })
-        // Toronto omits some zero-count types. Infer their zero only when the
-        // complete breakdown accounts for every available vehicle.
-        guard electricIDs.isSubset(of: seen) || sum == total else { return nil }
-        return electric
+        let electricIDs = Set(types.filter { $0.value == .electricBicycle }.map { $0.key })
+        let complete = sum == total
+        let electricKnown = complete || (!types.values.contains(.unknown) && electricIDs.isSubset(of: seen))
+        // Never call total-minus-electric a regular-bike count: the remainder
+        // could contain scooters or unclassified vehicles. Require full coverage.
+        return BikeInventory(electric: electricKnown ? electric : nil, standard: complete ? standard : nil)
     }
     public static func snapshot(information: Data, status: Data, vehicleTypes: Data? = nil, now: Date = Date()) throws -> StationSnapshot {
         let infoRoot = try object(information), statusRoot = try object(status)
@@ -119,7 +128,7 @@ public enum GBFSDecoder {
             throw FeedError.invalid("Missing stations or publication timestamp.")
         }
         var lookup: [String: [String: Any]] = [:]
-        let types = vehicleTypes.flatMap { try? electricBicycleTypes($0) }
+        let types = vehicleTypes.flatMap { try? classifiedVehicleTypes($0) }
         for status in statuses { if let id = text(status["station_id"]) { lookup[id] = status } }
         var seen = Set<String>()
         let stations: [Station] = infos.compactMap { info in
@@ -129,12 +138,13 @@ public enum GBFSDecoder {
             let point = Coordinate(latitude: latitude, longitude: longitude)
             guard point.isValid else { return nil }
             let status = lookup[id] ?? [:]
+            let inventory = bikeCounts(status, types: types)
             return Station(id: id, name: name, coordinate: point,
                            bikes: integer(status["num_vehicles_available"] ?? status["num_bikes_available"]),
                            docks: integer(status["num_docks_available"]),
                            installed: flag(status["is_installed"]), renting: flag(status["is_renting"]),
                            returning: flag(status["is_returning"]), reportedAt: date(status["last_reported"]),
-                           electricBikes: electricCount(status, types: types))
+                           electricBikes: inventory.electric, standardBikes: inventory.standard)
         }
         guard !stations.isEmpty else { throw FeedError.invalid("No valid stations.") }
         return StationSnapshot(stations: stations, updatedAt: updated, fetchedAt: now,
@@ -197,7 +207,7 @@ public actor GBFSClient {
                 if let typesURL = feeds["vehicle_types"] {
                     do {
                         let metadata = try await transport.load(typesURL)
-                        _ = try GBFSDecoder.electricBicycleTypes(metadata)
+                        _ = try GBFSDecoder.classifiedVehicleTypes(metadata)
                         vehicleTypes = metadata
                         typesExpiry = now.addingTimeInterval(21_600)
                     } catch is CancellationError { throw CancellationError() }

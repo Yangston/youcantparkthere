@@ -30,7 +30,13 @@ struct RootView: View {
             .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: model.page)
         }
         .ignoresSafeArea()
-        .background(.black)
+        .background {
+            if model.page == .map {
+                LinearGradient(colors: [Color(red: 0.20, green: 0.25, blue: 0.23),
+                                        Color(red: 0.10, green: 0.14, blue: 0.14)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            } else { Color.black }
+        }
         .tint(.orange)
         .onReceive(timer) { _ in model.tick() }
         .sheet(item: $model.sheet) { sheet in
@@ -41,10 +47,7 @@ struct RootView: View {
         .sheet(isPresented: Binding(get: { !onboarded && !model.isDemo }, set: { onboarded = !$0 })) {
             OnboardingView { onboarded = true }
         }
-        .alert("That station is full", isPresented: Binding(get: { model.fullTarget != nil }, set: { if !$0 { model.fullTarget = nil } })) {
-            Button("Find another") { model.clearTarget(); model.mode = .docks; model.sheet = nil; model.page = .map }
-            Button("Dismiss", role: .cancel) { model.fullTarget = nil }
-        } message: { Text(model.fullTarget ?? "") }
+
     }
 
     private var pageSwipe: some Gesture {

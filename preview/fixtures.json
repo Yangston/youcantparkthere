@@ -11,7 +11,8 @@
       "installed": true,
       "renting": true,
       "returning": true,
-      "electricBikes": 2
+      "electricBikes": 2,
+      "standardBikes": 2
     },
     {
       "id": "demo-1",
@@ -23,7 +24,8 @@
       "installed": true,
       "renting": true,
       "returning": true,
-      "electricBikes": 0
+      "electricBikes": 0,
+      "standardBikes": 9
     },
     {
       "id": "demo-2",
@@ -35,7 +37,8 @@
       "installed": true,
       "renting": true,
       "returning": true,
-      "electricBikes": 1
+      "electricBikes": 1,
+      "standardBikes": 5
     },
     {
       "id": "demo-3",
@@ -47,7 +50,8 @@
       "installed": true,
       "renting": true,
       "returning": true,
-      "electricBikes": null
+      "electricBikes": null,
+      "standardBikes": null
     }
   ],
   "scenarios": [
@@ -76,12 +80,26 @@
       "cycling": false
     },
     {
+      "id": "favorites",
+      "title": "Saved favourite",
+      "group": "Everyday",
+      "page": "map",
+      "mode": "docks",
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "A saved station has a white border; other markers retain their inventory colours.",
+      "cycling": false,
+      "favorites": [
+        "demo-0"
+      ]
+    },
+    {
       "id": "cycling",
       "title": "Cycling detected",
       "group": "Everyday",
       "page": "map",
       "mode": "docks",
-      "target": "demo-0",
       "age": 0,
       "data": true,
       "gps": true,
@@ -97,7 +115,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Inventory, favorite and destination actions.",
+      "description": "Separate ordinary-bike and e-bike counts, with a saved favourite action.",
       "cycling": false
     },
     {
@@ -109,7 +127,7 @@
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Cycling is opt-in; manual Ride and End remain available.",
+      "description": "Opt-in cycling, permissions, and legal/data information.",
       "cycling": false
     },
     {
@@ -220,10 +238,12 @@
       "description": "Total bikes remain available when e-bike counts are unknown; no lightning indicator is shown.",
       "overrides": {
         "demo-0": {
-          "electricBikes": null
+          "electricBikes": null,
+          "standardBikes": null
         },
         "demo-2": {
-          "electricBikes": null
+          "electricBikes": null,
+          "standardBikes": null
         }
       },
       "cycling": false
@@ -289,7 +309,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-58",
@@ -301,7 +322,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-57",
@@ -313,7 +335,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-56",
@@ -325,7 +348,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-55",
@@ -337,7 +361,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-54",
@@ -349,7 +374,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-53",
@@ -361,7 +387,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-52",
@@ -373,7 +400,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-51",
@@ -385,7 +413,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-50",
@@ -397,7 +426,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-49",
@@ -409,7 +439,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-48",
@@ -421,7 +452,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-47",
@@ -433,7 +465,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-46",
@@ -445,7 +478,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-45",
@@ -457,7 +491,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-44",
@@ -469,7 +504,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-43",
@@ -481,7 +517,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-42",
@@ -493,7 +530,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-41",
@@ -505,7 +543,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-40",
@@ -517,7 +556,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-39",
@@ -529,7 +569,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-38",
@@ -541,7 +582,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-37",
@@ -553,7 +595,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-36",
@@ -565,7 +608,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-35",
@@ -577,7 +621,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-34",
@@ -589,7 +634,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-33",
@@ -601,7 +647,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-32",
@@ -613,7 +660,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-31",
@@ -625,7 +673,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-30",
@@ -637,7 +686,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-29",
@@ -649,7 +699,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-28",
@@ -661,7 +712,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-27",
@@ -673,7 +725,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-26",
@@ -685,7 +738,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-25",
@@ -697,7 +751,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-24",
@@ -709,7 +764,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-23",
@@ -721,7 +777,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-22",
@@ -733,7 +790,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-21",
@@ -745,7 +803,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-20",
@@ -757,7 +816,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-19",
@@ -769,7 +829,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-18",
@@ -781,7 +842,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-17",
@@ -793,7 +855,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-16",
@@ -805,7 +868,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-15",
@@ -817,7 +881,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-14",
@@ -829,7 +894,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-13",
@@ -841,7 +907,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-12",
@@ -853,7 +920,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-11",
@@ -865,7 +933,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-10",
@@ -877,7 +946,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-09",
@@ -889,7 +959,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         },
         {
           "id": "cluster-08",
@@ -901,7 +972,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 6
         },
         {
           "id": "cluster-07",
@@ -913,7 +985,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 6
         },
         {
           "id": "cluster-06",
@@ -925,7 +998,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 6
         },
         {
           "id": "cluster-05",
@@ -937,7 +1011,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 3
         },
         {
           "id": "cluster-04",
@@ -949,7 +1024,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 3
         },
         {
           "id": "cluster-03",
@@ -961,7 +1037,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 3
         },
         {
           "id": "cluster-02",
@@ -973,7 +1050,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 2
+          "electricBikes": 2,
+          "standardBikes": 0
         },
         {
           "id": "cluster-01",
@@ -985,7 +1063,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 1
+          "electricBikes": 1,
+          "standardBikes": 0
         },
         {
           "id": "cluster-00",
@@ -997,7 +1076,8 @@
           "installed": true,
           "renting": true,
           "returning": true,
-          "electricBikes": 0
+          "electricBikes": 0,
+          "standardBikes": 0
         }
       ],
       "description": "60 cached sample stations; only the nearest 30 to the camera center are rendered."

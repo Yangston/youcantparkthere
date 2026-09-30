@@ -21,9 +21,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var locationDate: Date?
     @Published var now = Date()
     @Published var cyclingSince: Date?
-    @Published var targetID: String?
     @Published var error: String?
-    @Published var fullTarget: String?
     @Published var refreshing = false
     @Published var motionStatus = "Off"
     @Published var locationDenied = false
@@ -31,21 +29,19 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     let isDemo: Bool
 
     private let client = GBFSClient()
+    private let favoriteStore = FavoriteStore()
     private let location = CLLocationManager()
     private let motion = CMMotionActivityManager()
     private var detector = CyclingDetector()
-    private var targetMonitor = TargetAvailabilityMonitor()
     private var loop: Task<Void, Never>?
     private var active = false
     private var monitoringMotion = false
-    private var arrivedTarget: String?
     private var nextRefresh = Date.distantPast
     private var failures = 0
     private var suggestionUpdate: Task<Void, Never>?
 
     var cycling: Bool { cyclingSince != nil }
     var center: Coordinate { origin ?? .toronto }
-    var target: Station? { snapshot?.stations.first { $0.id == targetID } }
     var locationLabel: String {
         if isDemo { return "DEMO · sample stations" }
         guard let locationDate else { return "Downtown · no GPS" }
@@ -69,7 +65,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         super.init()
         location.delegate = self
         location.activityType = .otherNavigation
-        favorites = Set(UserDefaults.standard.stringArray(forKey: "favorites") ?? [])
+        favorites = favoriteStore.load()
         if isDemo { SimulatorPreview.configure(self) }
         else if let url = cacheURL, let data = try? Data(contentsOf: url) {
             snapshot = try? JSONDecoder().decode(StationSnapshot.self, from: data)
@@ -104,7 +100,6 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private func finishDetectedCycling(suppressRestart: Bool = false) {
         cyclingSince = nil
         if suppressRestart { detector.suppress(at: Date()) } else { detector.reset() }
-        arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor()
         configureServices()
         updateCyclingSuggestion()
     }
@@ -159,15 +154,8 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     func toggleFavorite(_ id: String) {
         if favorites.contains(id) { favorites.remove(id) } else { favorites.insert(id) }
-        UserDefaults.standard.set(Array(favorites).sorted(), forKey: "favorites")
+        if !isDemo { favoriteStore.save(favorites) }
     }
-    func chooseTarget(_ station: Station) {
-        targetID = station.id; arrivedTarget = nil
-        targetMonitor = TargetAvailabilityMonitor()
-        _ = targetMonitor.update(target: station, snapshot: snapshot, now: now)
-        sheet = nil; page = .map
-    }
-    func clearTarget() { targetID = nil; arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor() }
     func updateMapViewport(_ viewport: MapViewport) {
         guard viewport.isValid else { return }
         mapViewport = viewport
@@ -177,6 +165,9 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         let stations = snapshot.map { StationPlanner.visible($0, in: mapViewport) } ?? []
         // A camera callback with unchanged membership must not rebuild annotations.
         if stations != visibleStations { visibleStations = stations }
+    }
+    func freshStandardCount(_ station: Station) -> Int? {
+        snapshot?.usableStandardCount(station, at: now)
     }
     func freshElectricCount(_ station: Station) -> Int? {
         snapshot?.usableElectricCount(station, at: now)
@@ -198,10 +189,6 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             if let url = cacheURL {
                 try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                 if let data = try? JSONEncoder().encode(result) { try? data.write(to: url, options: .atomic) }
-            }
-            if cycling && targetMonitor.update(target: target, snapshot: result, now: now) {
-                fullTarget = "\(target?.name ?? "Your station") is now full. Choose another station."
-                WKInterfaceDevice.current().play(.notification)
             }
         } catch is CancellationError { return }
         catch {
@@ -276,12 +263,6 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
               abs(point.timestamp.timeIntervalSinceNow) <= 60 else { return }
         origin = Coordinate(latitude: point.coordinate.latitude, longitude: point.coordinate.longitude)
         locationDate = point.timestamp
-        if cycling, let target, let origin, arrivedTarget != target.id,
-           origin.distance(to: target.coordinate) < 60,
-           (snapshot?.usableCount(target, mode: .docks, at: Date()) ?? 0) > 0 {
-            arrivedTarget = target.id
-            WKInterfaceDevice.current().play(.directionUp)
-        }
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if (error as? CLError)?.code != .locationUnknown { self.error = "GPS unavailable. Distances may use your last position." }
