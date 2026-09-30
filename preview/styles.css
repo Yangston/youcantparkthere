@@ -923,6 +923,9 @@ footer span:last-child {
   flex-direction: column;
   gap: 5px;
 }
+.map-screen:has(.target-label) .map-utilities {
+  top: 42%;
+}
 .map-utilities button {
   width: 26px;
   height: 26px;

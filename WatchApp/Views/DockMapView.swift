@@ -16,14 +16,16 @@ struct DockMapView: View {
             ZStack {
                 stationMap
                 VStack(spacing: 0) {
-                    controls.padding(.top, max(10, geometry.size.height * 0.045))
-                    Spacer(minLength: 0)
-                    footer.padding(.bottom, 8)
-                }.padding(.horizontal, 8)
-                HStack {
-                    Spacer()
-                    utilityControls
-                }.padding(.trailing, 4)
+                    controls.padding(.horizontal, 8)
+                        .padding(.top, max(10, geometry.size.height * 0.045))
+                    Spacer(minLength: 4)
+                    HStack {
+                        Spacer()
+                        utilityControls
+                    }.padding(.trailing, 4)
+                    Spacer(minLength: 4)
+                    footer.padding(.horizontal, 8).padding(.bottom, 8)
+                }
                 loadingState
             }
         }.ignoresSafeArea()
