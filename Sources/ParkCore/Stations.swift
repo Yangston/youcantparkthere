@@ -105,22 +105,33 @@ public enum StationPlanner {
 }
 
 /// Only reacts to motion evidence while the app is executing. This does not wake an app.
-public struct RideDetector: Sendable {
+public struct CyclingDetector: Sendable {
     private var cyclingSince: Date?
+    private var nonCyclingSince: Date?
+    private var stationaryEvidence = false
     private var lastEvidence: Date?
     private var suppressedUntil = Date.distantPast
     public init() {}
-    public mutating func observe(cycling: Bool, confident: Bool, conflicting: Bool, at now: Date) {
+    public mutating func observe(cycling: Bool, confident: Bool, conflicting: Bool, stationary: Bool = false, at now: Date) {
         lastEvidence = now
-        if cycling && confident && !conflicting && now >= suppressedUntil {
+        if cycling && confident && !conflicting && !stationary && now >= suppressedUntil {
             if cyclingSince == nil { cyclingSince = now }
         } else { cyclingSince = nil }
+        if !cycling && confident && (conflicting || stationary) {
+            if nonCyclingSince == nil || stationaryEvidence != stationary { nonCyclingSince = now }
+            stationaryEvidence = stationary
+        } else { nonCyclingSince = nil }
     }
     public func shouldStart(at now: Date) -> Bool {
         guard now >= suppressedUntil, let start = cyclingSince, let evidence = lastEvidence else { return false }
         return now.timeIntervalSince(start) >= 12 && (0...45).contains(now.timeIntervalSince(evidence))
     }
-    public mutating func reset() { cyclingSince = nil; lastEvidence = nil }
+    public func shouldStop(at now: Date) -> Bool {
+        guard let since = nonCyclingSince else { return false }
+        // Wait longer at a standstill so a normal traffic light does not end navigation.
+        return now.timeIntervalSince(since) >= (stationaryEvidence ? 180 : 60)
+    }
+    public mutating func reset() { cyclingSince = nil; nonCyclingSince = nil; lastEvidence = nil }
     public mutating func suppress(at now: Date) {
         reset(); suppressedUntil = now.addingTimeInterval(300)
     }

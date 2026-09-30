@@ -2,7 +2,7 @@
 (function (root) {
   function stationsFor(fixtures, scenario) {
     if (!scenario.data || scenario.empty) return [];
-    return fixtures.stations.map((s) => ({
+    return (scenario.stations || fixtures.stations).map((s) => ({
       ...s,
       ...(scenario.overrides?.[s.id] || {}),
     }));
@@ -21,13 +21,13 @@
     if (age < -60 || age > 120 || !station.installed || !station.renting) return null;
     return station.electricBikes ?? null;
   }
-  function distance(station) {
+  function distance(station, center = { latitude: 43.6532, longitude: -79.3832 }) {
     const radians = Math.PI / 180;
     const a =
-      Math.sin(((station.latitude - 43.6532) * radians) / 2) ** 2 +
-      Math.cos(43.6532 * radians) *
+      Math.sin(((station.latitude - center.latitude) * radians) / 2) ** 2 +
+      Math.cos(center.latitude * radians) *
         Math.cos(station.latitude * radians) *
-        Math.sin(((station.longitude + 79.3832) * radians) / 2) ** 2;
+        Math.sin(((station.longitude - center.longitude) * radians) / 2) ** 2;
     return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
   function nearby(
@@ -46,7 +46,7 @@
       .sort((a, b) => distance(a) - distance(b) || a.id.localeCompare(b.id));
   }
   function defaultViewport() {
-    return { center: { latitude: 43.6532, longitude: -79.3832 }, latitudeSpan: 0.012, longitudeSpan: 0.016 };
+    return { center: { latitude: 43.6532, longitude: -79.3832 }, latitudeSpan: 0.009, longitudeSpan: 0.012 };
   }
   function viewportFor(scenario) {
     return scenario.viewport ? structuredClone(scenario.viewport) : defaultViewport();
@@ -56,7 +56,7 @@
       const longitude = Math.abs(((s.longitude - viewport.center.longitude + 540) % 360) - 180);
       return Math.abs(s.latitude - viewport.center.latitude) <= viewport.latitudeSpan * 0.6
         && longitude <= viewport.longitudeSpan * 0.6;
-    });
+    }).sort((a, b) => distance(a, viewport.center) - distance(b, viewport.center) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).slice(0, 30);
   }
   function project(station, viewport) {
     return { x: 50 + (station.longitude - viewport.center.longitude) / viewport.longitudeSpan * 100,

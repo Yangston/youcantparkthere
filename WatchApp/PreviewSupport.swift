@@ -30,7 +30,7 @@ enum SimulatorPreview {
             }
             current = scenario
             let date = model.now.addingTimeInterval(-scenario.age)
-            let stations: [Station] = scenario.empty == true ? [] : catalog.stations.map { sample in
+            let stations: [Station] = scenario.empty == true ? [] : (scenario.stations ?? catalog.stations).map { sample in
                 let override = scenario.overrides?[sample.id]
                 return Station(id: sample.id, name: sample.name,
                     coordinate: Coordinate(latitude: sample.latitude, longitude: sample.longitude),
@@ -46,12 +46,13 @@ enum SimulatorPreview {
             model.page = scenario.page == "settings" ? .settings : .map
             model.sheet = scenario.page == "detail" ? .station("demo-0") : nil
             model.updateMapViewport(scenario.viewport ?? MapViewport(center: .toronto))
-            model.ridingSince = scenario.riding ? model.now.addingTimeInterval(-300) : nil
+            model.cyclingSince = scenario.cycling ? model.now.addingTimeInterval(-300) : nil
             model.targetID = scenario.target
             model.error = scenario.error
             model.favorites = []
             // Isolate simulator defaults so previous runs cannot change screenshots.
-            UserDefaults.standard.set(false, forKey: "autoDetect")
+            UserDefaults.standard.set(scenario.cycling, forKey: "autoDetect")
+            model.motionStatus = scenario.cycling ? "Cycling detected (sample)" : "Off (sample)"
             UserDefaults.standard.set(true, forKey: "onboarded")
         } catch {
             model.error = "Preview fixture failed: \(error)"
@@ -72,7 +73,7 @@ enum SimulatorPreview {
         } ?? []
         let value: [String: Any] = [
             "scenario": scenario.id, "demo": model.isDemo, "mode": model.mode.rawValue,
-            "riding": model.riding, "screen": model.sheet?.screen ?? model.page.rawValue, "counts": counts,
+            "cycling": model.cycling, "screen": model.sheet?.screen ?? model.page.rawValue, "counts": counts,
             "electricCounts": electricCounts,
             "visibleStationIDs": model.visibleStations.map(\.id)
         ]
@@ -100,17 +101,18 @@ enum SimulatorPreview {
         return try JSONDecoder().decode(Catalog.self, from: Data(contentsOf: url))
     }
     private struct Catalog: Decodable { let stations: [Sample]; let scenarios: [Scenario] }
-    private struct Sample: Decodable {
+    struct Sample: Decodable {
         let id: String; let name: String; let latitude: Double; let longitude: Double
         let bikes: Int?; let docks: Int?; let installed: Bool; let renting: Bool; let returning: Bool
         let electricBikes: Int?
     }
     struct Scenario: Decodable {
-        let id: String; let page: String; let mode: String; let riding: Bool
+        let id: String; let page: String; let mode: String; let cycling: Bool
         let age: Double; let data: Bool; let gps: Bool
         let target: String?; let error: String?; let empty: Bool?; let largeText: Bool?
         let overrides: [String: Override]?
         let viewport: MapViewport?
+        let stations: [Sample]?
     }
     struct Override: Decodable {
         let returning: Bool?

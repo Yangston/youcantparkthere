@@ -6,7 +6,7 @@ public struct MapViewport: Codable, Equatable, Sendable {
     public let latitudeSpan: Double
     public let longitudeSpan: Double
 
-    public init(center: Coordinate, latitudeSpan: Double = 0.012, longitudeSpan: Double = 0.016) {
+    public init(center: Coordinate, latitudeSpan: Double = 0.009, longitudeSpan: Double = 0.012) {
         self.center = center
         self.latitudeSpan = latitudeSpan
         self.longitudeSpan = longitudeSpan
@@ -34,5 +34,8 @@ extension StationPlanner {
     /// Closed, empty and stale stations still have a place on the map.
     public static func visible(_ snapshot: StationSnapshot, in viewport: MapViewport) -> [Station] {
         snapshot.stations.filter { viewport.contains($0.coordinate) }
+            .map { ($0, viewport.center.distance(to: $0.coordinate)) }
+            .sorted { $0.1 == $1.1 ? $0.0.id < $1.0.id : $0.1 < $1.1 }
+            .prefix(30).map { $0.0 }
     }
 }

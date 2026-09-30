@@ -20,7 +20,7 @@ Open `http://127.0.0.1:8765`. Stop with Ctrl+C. The server binds to loopback and
 
 | Surface | Use it for | Evidence boundary |
 |---|---|---|
-| Interaction sandbox | Click through modes, station selection, destination, favorites, Ride/End, e-bike indicators, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, maps handoff or background execution. Editing SwiftUI does not automatically change this sketch. |
+| Interaction sandbox | Click through modes, station selection, destination, favorites, automatic cycling states, e-bike indicators, onboarding and error states | HTML approximation. No SwiftUI compilation, real sensor, GPS, maps handoff or background execution. Editing SwiftUI does not automatically change this sketch. |
 | Native captures | Review the actual map/detail/settings/onboarding layouts, compact/large Watch displays, accessibility text, stale/offline/closed/empty/error states | The current SwiftUI app compiled and launched in watchOS Simulator. Scenario state and process survival are asserted. Screenshots still need human visual review. |
 | Physical Watch | Permission prompts, complications/Siri, background behavior, GPS/motion, haptics, battery and connectivity | Record only tests actually performed in DEVICE_TESTS.md. |
 
@@ -66,7 +66,7 @@ Artifacts expire after 30 days. Keep an extracted known-good preview outside the
 
 - **Windows tooling job:** Python helper/import/report/release-gate tests and JS freshness/inventory semantics.
 - **Two native jobs:** compact and large Watch devices selected from the newest available runtime. Actual model/runtime names are recorded rather than guessed.
-- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 15 scenario state assertions/screenshots > offline preview report.
+- **Each native job:** helper tests > `swift test` > assets/XcodeGen > Watch + widgets compilation > unsigned archive validation > optional live feed diagnostic > paired-simulator route assertions > 16 scenario state assertions/screenshots > offline preview report.
 - **Partial failures:** available screenshots and logs are still uploaded, with failed/missing states visible. CI remains red when any required step fails.
 - **Live feed:** remote outages are diagnostic and do not masquerade as deterministic test failures.
 - **Signed distribution:** a separate manual workflow restricted to `main` and the protected `testflight` environment. It requires green unsigned CI for the exact commit. See RELEASING.md.
@@ -80,8 +80,8 @@ Between captures, the harness explicitly terminates the app, verifies process ex
 ## Adding or changing a feature
 
 1. Change the production screen in `WatchApp/Views/`, or behavior in `AppModel` / `ParkCore`.
-2. Add meaningful deterministic core tests for changed logic. Do not alter freshness, motion opt-in or ride-stop semantics just to satisfy a preview.
-3. Add/adjust a scenario in `preview/fixtures.json`. `SimulatorPreview` loads it; the harness independently checks expected mode, tab, ride state and usable counts. Extend both schema readers when adding a new fixture field.
+2. Add meaningful deterministic core tests for changed logic. Do not alter freshness, motion opt-in or cycling stop/opt-out semantics just to satisfy a preview.
+3. Add/adjust a scenario in `preview/fixtures.json`. `SimulatorPreview` loads it; the harness independently checks expected mode, tab, cycling state and usable counts. Extend both schema readers when adding a new fixture field.
 4. If the interaction flow changes, update the approximate sandbox separately in `preview/app.js`. The shared fixtures prevent data drift; they do not make HTML a SwiftUI renderer.
 5. Review both native device reports and large-text captures, then merge. Record relevant hardware checks when you choose to install a new beta.
 
@@ -102,4 +102,6 @@ python3 scripts/preview_report.py
 
 Keep generated projects, assets, build output and signing material ignored. `project.yml` defines bundle metadata and capabilities. Never hand-edit a generated Info.plist as the durable fix.
 
-Map previews include `panned` and `panned-empty` camera presets. `visibleStationIDs` asserts the spatial selection separately from inventory counts. Portable tests exercise moving beyond the former GPS radius, more than 40 visible stations, culling, returning, invalid bounds and longitude wrapping. Native captures verify preset layouts and states; they do not exercise real touch hit testing or swipe arbitration. Retest those on the Watch. The sandbox supports dragging its sample map and swiping the bottom strip between Map and Settings.
+Map previews include `panned` and `panned-empty` camera presets. `visibleStationIDs` asserts the spatial selection separately from inventory counts. Portable tests exercise moving beyond the former GPS radius, the nearest-30 cap and camera-based ranking, culling, returning, invalid bounds and longitude wrapping. Native captures verify preset layouts and states; they do not exercise real touch hit testing or swipe arbitration. Retest those on the Watch. The sandbox supports dragging its sample map and swiping the bottom strip between Map and Settings.
+
+The `dense` preview contains 60 cached stations and asserts exactly 30 rendered IDs in nearest-center order. `cycling` replaces the manual-ride scenario. The legacy ride URL smoke test must remain accepted but report cycling=false; a URL cannot manufacture sensor evidence. The bottom control/page-indicator strip is structurally outside MapKit, rather than a gesture overlay on the map.

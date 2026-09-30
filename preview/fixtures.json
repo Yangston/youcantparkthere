@@ -57,11 +57,11 @@
       "group": "Everyday",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Fresh availability, including a genuinely full station."
+      "description": "Fresh availability, including a genuinely full station.",
+      "cycling": false
     },
     {
       "id": "bikes",
@@ -69,24 +69,24 @@
       "group": "Everyday",
       "page": "map",
       "mode": "bikes",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "The same stations in bike mode."
+      "description": "The same stations in bike mode.",
+      "cycling": false
     },
     {
-      "id": "ride",
-      "title": "Active ride",
+      "id": "cycling",
+      "title": "Cycling detected",
       "group": "Everyday",
       "page": "map",
       "mode": "docks",
-      "riding": true,
       "target": "demo-0",
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "An explicit navigation session with a destination."
+      "description": "Automatic cycling has qualified; there are no Start or End controls.",
+      "cycling": true
     },
     {
       "id": "station",
@@ -94,23 +94,23 @@
       "group": "Screens",
       "page": "detail",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Inventory, favorite and destination actions."
+      "description": "Inventory, favorite and destination actions.",
+      "cycling": false
     },
     {
       "id": "settings",
-      "title": "Ride & settings",
+      "title": "Settings",
       "group": "Screens",
       "page": "settings",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
-      "description": "Cycling is opt-in; manual Ride and End remain available."
+      "description": "Cycling is opt-in; manual Ride and End remain available.",
+      "cycling": false
     },
     {
       "id": "onboarding",
@@ -118,11 +118,11 @@
       "group": "Screens",
       "page": "onboarding",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": false,
-      "description": "The actual onboarding content without a system permission prompt."
+      "description": "The actual onboarding content without a system permission prompt.",
+      "cycling": false
     },
     {
       "id": "stale",
@@ -130,11 +130,11 @@
       "group": "Failures",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 600,
       "data": true,
       "gps": true,
-      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts."
+      "description": "Ten-minute-old inventory must appear unknown, never as fresh counts.",
+      "cycling": false
     },
     {
       "id": "offline",
@@ -142,12 +142,12 @@
       "group": "Failures",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 600,
       "data": true,
       "gps": false,
       "error": "Offline / feed unavailable. Check the timestamps before riding to a station.",
-      "description": "Cached station locations remain visible; inventory is unknown."
+      "description": "Cached station locations remain visible; inventory is unknown.",
+      "cycling": false
     },
     {
       "id": "unavailable",
@@ -155,7 +155,6 @@
       "group": "Failures",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
@@ -167,7 +166,8 @@
           "docks": null
         }
       },
-      "description": "Closed and missing-count stations are gray. Fresh zero stays red."
+      "description": "Closed and missing-count stations are gray. Fresh zero stays red.",
+      "cycling": false
     },
     {
       "id": "empty",
@@ -175,12 +175,12 @@
       "group": "Failures",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "empty": true,
       "gps": true,
-      "description": "A valid feed with no stations is not a network failure."
+      "description": "A valid feed with no stations is not a network failure.",
+      "cycling": false
     },
     {
       "id": "error",
@@ -188,12 +188,12 @@
       "group": "Failures",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": false,
       "gps": false,
       "error": "Couldn't load stations. Check your connection and retry.",
-      "description": "No station data, a clear error and a retry action."
+      "description": "No station data, a clear error and a retry action.",
+      "cycling": false
     },
     {
       "id": "large-text",
@@ -201,12 +201,12 @@
       "group": "Accessibility",
       "page": "detail",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
       "largeText": true,
-      "description": "Station details at accessibility text size."
+      "description": "Station details at accessibility text size.",
+      "cycling": false
     },
     {
       "id": "bike-types-unknown",
@@ -214,7 +214,6 @@
       "group": "Failures",
       "page": "map",
       "mode": "bikes",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
@@ -226,7 +225,8 @@
         "demo-2": {
           "electricBikes": null
         }
-      }
+      },
+      "cycling": false
     },
     {
       "id": "panned",
@@ -234,7 +234,6 @@
       "group": "Map browsing",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
@@ -246,7 +245,8 @@
         },
         "latitudeSpan": 0.001,
         "longitudeSpan": 0.001
-      }
+      },
+      "cycling": false
     },
     {
       "id": "panned-empty",
@@ -254,7 +254,6 @@
       "group": "Map browsing",
       "page": "map",
       "mode": "docks",
-      "riding": false,
       "age": 0,
       "data": true,
       "gps": true,
@@ -266,7 +265,742 @@
         },
         "latitudeSpan": 0.001,
         "longitudeSpan": 0.001
-      }
+      },
+      "cycling": false
+    },
+    {
+      "id": "dense",
+      "title": "Nearest 30 stations",
+      "group": "Map browsing",
+      "page": "map",
+      "mode": "docks",
+      "cycling": false,
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "stations": [
+        {
+          "id": "cluster-59",
+          "name": "Sample station 60",
+          "latitude": 43.65115347777738,
+          "longitude": -79.38385083573941,
+          "bikes": 5,
+          "docks": 7,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-58",
+          "name": "Sample station 59",
+          "latitude": 43.65437110420457,
+          "longitude": -79.38084929886845,
+          "bikes": 4,
+          "docks": 6,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-57",
+          "name": "Sample station 58",
+          "latitude": 43.6534805056281,
+          "longitude": -79.3859787694175,
+          "bikes": 3,
+          "docks": 5,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-56",
+          "name": "Sample station 57",
+          "latitude": 43.65166205428247,
+          "longitude": -79.38144371458861,
+          "bikes": 2,
+          "docks": 4,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-55",
+          "name": "Sample station 56",
+          "latitude": 43.65515744295392,
+          "longitude": -79.38306167096809,
+          "bikes": 1,
+          "docks": 3,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-54",
+          "name": "Sample station 55",
+          "latitude": 43.65184881616289,
+          "longitude": -79.38509501756788,
+          "bikes": 0,
+          "docks": 2,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-53",
+          "name": "Sample station 54",
+          "latitude": 43.653268877691815,
+          "longitude": -79.3805895466435,
+          "bikes": 8,
+          "docks": 1,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-52",
+          "name": "Sample station 53",
+          "latitude": 43.65440235439361,
+          "longitude": -79.38515233491466,
+          "bikes": 7,
+          "docks": 0,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-51",
+          "name": "Sample station 52",
+          "latitude": 43.651393971713645,
+          "longitude": -79.38288891207641,
+          "bikes": 6,
+          "docks": 12,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-50",
+          "name": "Sample station 51",
+          "latitude": 43.65465521599397,
+          "longitude": -79.38177128864764,
+          "bikes": 5,
+          "docks": 11,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-49",
+          "name": "Sample station 50",
+          "latitude": 43.652832583336746,
+          "longitude": -79.38556478435048,
+          "bikes": 4,
+          "docks": 10,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-48",
+          "name": "Sample station 49",
+          "latitude": 43.65233285766094,
+          "longitude": -79.38115499542471,
+          "bikes": 3,
+          "docks": 9,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-47",
+          "name": "Sample station 48",
+          "latitude": 43.65480542943089,
+          "longitude": -79.38388410461575,
+          "bikes": 2,
+          "docks": 8,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-46",
+          "name": "Sample station 47",
+          "latitude": 43.65171348611506,
+          "longitude": -79.38417367832201,
+          "bikes": 1,
+          "docks": 7,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-45",
+          "name": "Sample station 46",
+          "latitude": 43.653807038673854,
+          "longitude": -79.3811390310527,
+          "bikes": 0,
+          "docks": 6,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-44",
+          "name": "Sample station 45",
+          "latitude": 43.6537474964895,
+          "longitude": -79.38524106985108,
+          "bikes": 8,
+          "docks": 5,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-43",
+          "name": "Sample station 44",
+          "latitude": 43.65182988309518,
+          "longitude": -79.3822282086688,
+          "bikes": 7,
+          "docks": 4,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-42",
+          "name": "Sample station 43",
+          "latitude": 43.654651477928375,
+          "longitude": -79.38265021042794,
+          "bikes": 6,
+          "docks": 3,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-41",
+          "name": "Sample station 42",
+          "latitude": 43.65241706977684,
+          "longitude": -79.38491955872992,
+          "bikes": 5,
+          "docks": 2,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-40",
+          "name": "Sample station 41",
+          "latitude": 43.65294315855822,
+          "longitude": -79.38124869830929,
+          "bikes": 4,
+          "docks": 1,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-39",
+          "name": "Sample station 40",
+          "latitude": 43.65431518321844,
+          "longitude": -79.38436979650882,
+          "bikes": 3,
+          "docks": 0,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-38",
+          "name": "Sample station 39",
+          "latitude": 43.65184082486362,
+          "longitude": -79.38337410174077,
+          "bikes": 2,
+          "docks": 12,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-37",
+          "name": "Sample station 38",
+          "latitude": 43.654093607272024,
+          "longitude": -79.38183852235252,
+          "bikes": 1,
+          "docks": 11,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-36",
+          "name": "Sample station 37",
+          "latitude": 43.65320631736893,
+          "longitude": -79.38498981161057,
+          "bikes": 0,
+          "docks": 10,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-35",
+          "name": "Sample station 36",
+          "latitude": 43.65234436002347,
+          "longitude": -79.38192165608308,
+          "bikes": 8,
+          "docks": 9,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-34",
+          "name": "Sample station 35",
+          "latitude": 43.65442081745123,
+          "longitude": -79.38333978972375,
+          "bikes": 7,
+          "docks": 8,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-33",
+          "name": "Sample station 34",
+          "latitude": 43.65225915842181,
+          "longitude": -79.38420706171786,
+          "bikes": 6,
+          "docks": 7,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-32",
+          "name": "Sample station 33",
+          "latitude": 43.65339562947924,
+          "longitude": -79.38162672726172,
+          "bikes": 5,
+          "docks": 6,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-31",
+          "name": "Sample station 32",
+          "latitude": 43.65380573826696,
+          "longitude": -79.38450203389314,
+          "bikes": 4,
+          "docks": 5,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-30",
+          "name": "Sample station 31",
+          "latitude": 43.65215083754434,
+          "longitude": -79.38281776928778,
+          "bikes": 3,
+          "docks": 4,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-29",
+          "name": "Sample station 30",
+          "latitude": 43.65412944890927,
+          "longitude": -79.38252484973765,
+          "bikes": 2,
+          "docks": 3,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-28",
+          "name": "Sample station 29",
+          "latitude": 43.65285647093633,
+          "longitude": -79.38452005126315,
+          "bikes": 1,
+          "docks": 2,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-27",
+          "name": "Sample station 28",
+          "latitude": 43.65282166013944,
+          "longitude": -79.38195053940834,
+          "bikes": 0,
+          "docks": 1,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-26",
+          "name": "Sample station 27",
+          "latitude": 43.65405786262124,
+          "longitude": -79.38374780536759,
+          "bikes": 8,
+          "docks": 0,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-25",
+          "name": "Sample station 26",
+          "latitude": 43.652333049572746,
+          "longitude": -79.3835822652316,
+          "bikes": 7,
+          "docks": 12,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-24",
+          "name": "Sample station 25",
+          "latitude": 43.653635033265594,
+          "longitude": -79.3821507141829,
+          "bikes": 6,
+          "docks": 11,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-23",
+          "name": "Sample station 24",
+          "latitude": 43.65338436435017,
+          "longitude": -79.38433266434126,
+          "bikes": 5,
+          "docks": 10,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-22",
+          "name": "Sample station 23",
+          "latitude": 43.65253920903874,
+          "longitude": -79.38256455936886,
+          "bikes": 4,
+          "docks": 9,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-21",
+          "name": "Sample station 22",
+          "latitude": 43.6539631234478,
+          "longitude": -79.38305808880568,
+          "bikes": 3,
+          "docks": 8,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-20",
+          "name": "Sample station 21",
+          "latitude": 43.65272907877845,
+          "longitude": -79.38397995391145,
+          "bikes": 2,
+          "docks": 7,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-19",
+          "name": "Sample station 20",
+          "latitude": 43.65316766598784,
+          "longitude": -79.38223355543258,
+          "bikes": 1,
+          "docks": 6,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-18",
+          "name": "Sample station 19",
+          "latitude": 43.65367137156051,
+          "longitude": -79.38384831709162,
+          "bikes": 0,
+          "docks": 5,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-17",
+          "name": "Sample station 18",
+          "latitude": 43.65257053798597,
+          "longitude": -79.38316402334893,
+          "bikes": 8,
+          "docks": 4,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-16",
+          "name": "Sample station 17",
+          "latitude": 43.653654966152295,
+          "longitude": -79.38267003537591,
+          "bikes": 7,
+          "docks": 3,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-15",
+          "name": "Sample station 16",
+          "latitude": 43.65312803401371,
+          "longitude": -79.38396756403652,
+          "bikes": 6,
+          "docks": 2,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-14",
+          "name": "Sample station 15",
+          "latitude": 43.6528980570497,
+          "longitude": -79.38260640740891,
+          "bikes": 5,
+          "docks": 1,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-13",
+          "name": "Sample station 14",
+          "latitude": 43.65367857112908,
+          "longitude": -79.38334541531351,
+          "bikes": 4,
+          "docks": 0,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-12",
+          "name": "Sample station 13",
+          "latitude": 43.65280632889956,
+          "longitude": -79.38351531527721,
+          "bikes": 3,
+          "docks": 12,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-11",
+          "name": "Sample station 12",
+          "latitude": 43.65332569922307,
+          "longitude": -79.38264612075403,
+          "bikes": 2,
+          "docks": 11,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-10",
+          "name": "Sample station 11",
+          "latitude": 43.65336318070809,
+          "longitude": -79.38368195251545,
+          "bikes": 1,
+          "docks": 10,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-09",
+          "name": "Sample station 10",
+          "latitude": 43.65287647905535,
+          "longitude": -79.38301542642812,
+          "bikes": 0,
+          "docks": 9,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-08",
+          "name": "Sample station 9",
+          "latitude": 43.65349588620834,
+          "longitude": -79.38305065306835,
+          "bikes": 8,
+          "docks": 8,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-07",
+          "name": "Sample station 8",
+          "latitude": 43.653070946033075,
+          "longitude": -79.38354343446538,
+          "bikes": 7,
+          "docks": 7,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-06",
+          "name": "Sample station 7",
+          "latitude": 43.6531363969453,
+          "longitude": -79.38287299242336,
+          "bikes": 6,
+          "docks": 6,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-05",
+          "name": "Sample station 6",
+          "latitude": 43.653377188611906,
+          "longitude": -79.38335578165368,
+          "bikes": 5,
+          "docks": 5,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-04",
+          "name": "Sample station 5",
+          "latitude": 43.653027675140066,
+          "longitude": -79.38324212926847,
+          "bikes": 4,
+          "docks": 4,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-03",
+          "name": "Sample station 4",
+          "latitude": 43.65328518144054,
+          "longitude": -79.38304644186594,
+          "bikes": 3,
+          "docks": 3,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        },
+        {
+          "id": "cluster-02",
+          "name": "Sample station 3",
+          "latitude": 43.65320917970109,
+          "longitude": -79.38334456592247,
+          "bikes": 2,
+          "docks": 2,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 2
+        },
+        {
+          "id": "cluster-01",
+          "name": "Sample station 2",
+          "latitude": 43.653148384178536,
+          "longitude": -79.38313464785095,
+          "bikes": 1,
+          "docks": 1,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 1
+        },
+        {
+          "id": "cluster-00",
+          "name": "Sample station 1",
+          "latitude": 43.653234999999995,
+          "longitude": -79.3832,
+          "bikes": 0,
+          "docks": 0,
+          "installed": true,
+          "renting": true,
+          "returning": true,
+          "electricBikes": 0
+        }
+      ],
+      "description": "60 cached sample stations; only the nearest 30 to the camera center are rendered."
     }
   ]
 }

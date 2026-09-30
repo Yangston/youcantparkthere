@@ -109,21 +109,21 @@ final class ParkCoreTests: XCTestCase {
         XCTAssertEqual(try JSONDecoder().decode(StationSnapshot.self, from: JSONEncoder().encode(original)), original)
     }
     func testCyclingRequiresSustainedConfidentEvidence() {
-        var detector = RideDetector()
+        var detector = CyclingDetector()
         detector.observe(cycling: true, confident: true, conflicting: false, at: now)
         XCTAssertFalse(detector.shouldStart(at: now.addingTimeInterval(11)))
         XCTAssertTrue(detector.shouldStart(at: now.addingTimeInterval(12)))
         XCTAssertFalse(detector.shouldStart(at: now.addingTimeInterval(46)))
     }
     func testDrivingAndLowConfidenceDoNotStartRide() {
-        var detector = RideDetector()
+        var detector = CyclingDetector()
         detector.observe(cycling: true, confident: true, conflicting: true, at: now)
         XCTAssertFalse(detector.shouldStart(at: now.addingTimeInterval(20)))
         detector.observe(cycling: true, confident: false, conflicting: false, at: now)
         XCTAssertFalse(detector.shouldStart(at: now.addingTimeInterval(20)))
     }
     func testEndRideSuppressesAutomaticRestart() {
-        var detector = RideDetector()
+        var detector = CyclingDetector()
         detector.suppress(at: now)
         detector.observe(cycling: true, confident: true, conflicting: false, at: now.addingTimeInterval(10))
         XCTAssertFalse(detector.shouldStart(at: now.addingTimeInterval(30)))

@@ -27,7 +27,7 @@ The workflow uploads a beta, not a public App Store submission. A simulator `.ap
 - On the iPhone paired with your Watch, open Apple's TestFlight app and Install/Update this watch-only app. A separate iPhone app icon is not expected. Keep the Watch nearby and connected.
 - Confirm the build actually opens on the Watch, then run the relevant entries in [DEVICE_TESTS.md](DEVICE_TESTS.md). Record build number, hardware, OS versions and results. Do not infer sensor/background/battery success from a simulator screenshot.
 
-For a new internal build, useful What to Test text is: "Check the changed screens, real station freshness, permissions, complications, and Ride/End while safely stationary. Record Watch/iPhone versions and any failure." External testers have a separate review flow; do not grant administrative access merely to avoid it.
+For a new internal build, useful What to Test text is: "Check the changed screens, real station freshness, permissions, complications, and automatic cycling start/stop and opt-out while safely stationary. Record Watch/iPhone versions and any failure." External testers have a separate review flow; do not grant administrative access merely to avoid it.
 
 ## Diagnose or roll back
 

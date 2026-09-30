@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Assemble an offline native screenshot report. No credentials or live user data."""
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -16,10 +17,10 @@ def catalog():
 
 def expected_state(scenario, fixtures=None):
     fixtures = fixtures or catalog()
-    stations = fixtures['stations'] if scenario['data'] and not scenario.get('empty') else []
+    stations = scenario.get('stations', fixtures['stations']) if scenario['data'] and not scenario.get('empty') else []
     counts, electric_counts, visible_ids = [], [], []
     viewport = scenario.get('viewport', {'center': {'latitude': 43.6532, 'longitude': -79.3832},
-                                         'latitudeSpan': 0.012, 'longitudeSpan': 0.016})
+                                         'latitudeSpan': 0.009, 'longitudeSpan': 0.012})
     for original in stations:
         station = {**original, **scenario.get('overrides', {}).get(original['id'], {})}
         operational = station['installed'] and station['returning' if scenario['mode'] == 'docks' else 'renting']
@@ -28,11 +29,15 @@ def expected_state(scenario, fixtures=None):
         electric_counts.append(station.get('electricBikes') if fresh and station['installed'] and station['renting'] else None)
         longitude = abs((station['longitude'] - viewport['center']['longitude'] + 540) % 360 - 180)
         if abs(station['latitude'] - viewport['center']['latitude']) <= viewport['latitudeSpan'] * 0.6 and longitude <= viewport['longitudeSpan'] * 0.6:
-            visible_ids.append(station['id'])
+            latitude_delta = math.radians(station['latitude'] - viewport['center']['latitude'])
+            longitude_delta = math.radians(station['longitude'] - viewport['center']['longitude'])
+            arc = math.sin(latitude_delta / 2) ** 2 + math.cos(math.radians(station['latitude'])) * math.cos(math.radians(viewport['center']['latitude'])) * math.sin(longitude_delta / 2) ** 2
+            distance = 6371000 * 2 * math.atan2(math.sqrt(max(0, min(1, arc))), math.sqrt(max(0, 1 - arc)))
+            visible_ids.append((distance, station['id']))
     return {'scenario': scenario['id'], 'demo': True, 'mode': scenario['mode'],
-            'riding': scenario['riding'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
+            'cycling': scenario['cycling'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
             'electricCounts': electric_counts,
-            'counts': counts, 'visibleStationIDs': visible_ids}
+            'counts': counts, 'visibleStationIDs': [ident for _, ident in sorted(visible_ids)[:30]]}
 
 
 def validate_state(value, scenario):

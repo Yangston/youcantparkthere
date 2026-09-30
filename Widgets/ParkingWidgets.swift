@@ -68,7 +68,7 @@ struct RideShortcutProvider: AppIntentTimelineProvider {
         Timeline(entries: [ParkingEntry(date: Date())], policy: .never)
     }
     func recommendations() -> [AppIntentRecommendation<RideWidgetConfiguration>] {
-        [AppIntentRecommendation(intent: RideWidgetConfiguration(), description: "Ride shortcut")]
+        [AppIntentRecommendation(intent: RideWidgetConfiguration(), description: "Cycling shortcut")]
     }
 }
 
@@ -78,8 +78,8 @@ struct RideShortcutWidget: Widget {
                                provider: RideShortcutProvider()) { _ in
             ParkingWidgetView(mode: "docks")
         }
-        .configurationDisplayName("Ride shortcut")
-        .description("Suggested during an active Ride. watchOS controls when it appears.")
+        .configurationDisplayName("Cycling shortcut")
+        .description("Suggested after cycling is detected. watchOS controls when it appears.")
         .supportedFamilies([.accessoryRectangular])
     }
 }

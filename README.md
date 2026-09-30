@@ -16,7 +16,7 @@ Open **http://127.0.0.1:8765**. The preview studio has an interactive behavior s
 1. Make a branch and edit the native app.
 2. Run local checks and explore the interaction sandbox.
 3. Push the branch and open a PR, or manually run **Build and test** for that branch.
-4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 15 states and compare an older capture folder.
+4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 16 states and compare an older capture folder.
 5. Merge to `main`, wait for CI, and manually run **Upload to TestFlight** only when you want a Watch update.
 
 No Apple keys are required for previews. No push or PR automatically uploads to TestFlight.
@@ -31,14 +31,13 @@ No Apple keys are required for previews. No push or PR automatically uploads to 
 
 ## App behavior
 
-- **Park / Bikes:** an edge-to-edge map with compact controls. Tap a marker for details. Drag to browse another area; markers follow the camera. Swipe left across the bottom strip for Settings and right to return. There is no separate nearby-list page.
+- **Park / Bikes:** a full-width map with a dedicated bottom control/swipe strip. Tap a marker for details. Drag to browse another area; the nearest 30 markers follow the camera center. Swipe left across the bottom strip for Settings and right to return. There is no separate nearby-list page.
 - **E-bikes:** Bikes mode shows total bikes, with a lightning mark when e-bikes are available. Tap a station for its e-bike count. Counts use the operator's vehicle-type metadata; unavailable type data stays unknown.
 - **Availability:** green = 3+, yellow = 1-2, red = fresh zero, gray = unknown or unavailable. Stale counts are never shown as fresh inventory.
-- **Ride:** explicit start/end, background navigation location, 90-minute cutoff and five-minute automatic-restart suppression after ending.
-- **Cycling detection:** opt-in, only while the app is executing. It cannot launch a closed app.
+- **Automatic cycling:** opt in once in Settings. Detection starts navigation and automatically stops it after sustained non-cycling activity. Turning detection off stops it immediately; a 90-minute limit and restart suppression remain. It cannot launch a closed app.
 - **Destinations:** proximity and newly-full warnings; neither reserves a dock nor confirms a successful return.
 - **Complications:** intentional launchers, not live inventory widgets.
-- **Ride shortcut:** an optional Smart Stack suggestion during an active Ride, including foreground-detected cycling. watchOS controls visibility and clock-screen hints; a closed app cannot detect cycling or force a banner.
+- **Cycling shortcut:** an optional Smart Stack suggestion after cycling is detected. watchOS controls visibility and clock-screen hints; a closed app cannot detect cycling or force a banner.
 - **Privacy:** no analytics, route history or uploaded GPS/motion samples. Apple Maps and the public feed still make network requests.
 
 ## Source map
@@ -46,9 +45,9 @@ No Apple keys are required for previews. No push or PR automatically uploads to 
 | Path | Responsibility |
 |---|---|
 | `WatchApp/Views/` | Native SwiftUI screens and formatting |
-| `WatchApp/AppModel.swift` | Live data, permissions, ride session and services |
+| `WatchApp/AppModel.swift` | Live data, permissions, automatic cycling and services |
 | `WatchApp/PreviewSupport.swift` | Simulator-only fixtures and screenshot presentation |
-| `Sources/ParkCore/` | Portable data parsing, freshness, ranking, ride and route logic |
+| `Sources/ParkCore/` | Portable data parsing, freshness, ranking, cycling and route logic |
 | `Widgets/` | Watch-face and Smart Stack launchers |
 | `preview/` | Local studio, shared fixtures and sketch logic tests |
 | `scripts/` | Repeatable checks, previews, asset generation and archive validation |

@@ -9,22 +9,22 @@ struct DockMapView: View {
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @State private var camera: MapCameraPosition = .region(MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832),
-        span: MKCoordinateSpan(latitudeDelta: 0.012, longitudeDelta: 0.016)))
+        span: MKCoordinateSpan(latitudeDelta: 0.009, longitudeDelta: 0.012)))
     @State private var follow = true
     @State private var lastViewportUpdate = Date.distantPast
 
     var body: some View {
         ZStack {
-            // Only the map draws outside the safe area. Controls stay tappable.
-            stationMap.ignoresSafeArea()
-            VStack(spacing: 0) {
-                controls
+            stationMap
+            if model.snapshot == nil { loadingControl }
+            VStack {
                 Spacer(minLength: 0)
-                footer
-            }.padding(.horizontal, 2).zIndex(1)
+                destinationControl.padding(.horizontal, 4).padding(.bottom, 18)
+            }
             emptyState
         }
         .onAppear { if model.page == .map { resumeFollowing() } }
+        .onChange(of: model.recenterRequest) { _, _ in resumeFollowing() }
         .onChange(of: model.page) { _, page in if page == .map { resumeFollowing() } }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active && !isLuminanceReduced && model.page == .map { resumeFollowing() }
@@ -94,7 +94,7 @@ struct DockMapView: View {
     }
 
     @ViewBuilder
-    private var controls: some View {
+    private var loadingControl: some View {
         if model.snapshot == nil {
             if model.error != nil && !model.refreshing {
                 Button { Task { await model.refresh(manual: true) } } label: {
@@ -109,77 +109,23 @@ struct DockMapView: View {
                     Text("Loading stations…").font(.system(size: 11))
                 }.frame(height: 44).allowsHitTesting(false)
             }
-        } else {
-            HStack(spacing: 0) {
-                Button {
-                    model.mode = model.mode == .docks ? .bikes : .docks
-                    WKInterfaceDevice.current().play(.click)
-                } label: {
-                    Label(model.mode.title, systemImage: model.mode.symbol)
-                        .font(.system(size: 12, weight: .bold))
-                        .padding(.horizontal, 6).frame(height: 28)
-                        .background(.regularMaterial, in: Capsule())
-                        .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
-                }.buttonStyle(MapControlButtonStyle())
-                    .accessibilityIdentifier("map.mode")
-                    .accessibilityHint("Switch between parking and bikes")
-                Spacer(minLength: 0)
-                Button {
-                    resumeFollowing(); model.requestLocation()
-                    WKInterfaceDevice.current().play(.click)
-                } label: {
-                    Image(systemName: "location.fill").font(.system(size: 12))
-                        .frame(width: 28, height: 28)
-                        .background(.regularMaterial, in: Circle())
-                        .frame(width: 44, height: 44).contentShape(Rectangle())
-                }.buttonStyle(MapControlButtonStyle())
-                    .accessibilityIdentifier("map.recenter")
-                    .accessibilityLabel("Recenter on my location")
-                    .accessibilityValue(model.locationLabel)
-            }
         }
     }
 
-    private var footer: some View {
-        VStack(spacing: 0) {
-            if let target = model.target {
-                Button { model.sheet = .station(target.id) } label: {
-                    HStack(spacing: 3) {
-                        Image(systemName: "flag.fill")
-                        Text(target.name).lineLimit(1)
-                        Spacer(minLength: 0)
-                        Text(model.freshCount(target, mode: .docks).map { "\($0) P" } ?? "– P").bold()
-                    }.font(.system(size: 9)).padding(.horizontal, 6).frame(height: 24)
-                        .background(.regularMaterial, in: Capsule())
-                        .frame(minHeight: 44).contentShape(Rectangle())
-                }.buttonStyle(MapControlButtonStyle())
-                    .accessibilityIdentifier("map.destination")
-            }
-            HStack(alignment: .top, spacing: 4) {
-                Text(model.freshnessLabel)
-                    .font(.system(size: 9)).lineLimit(2).minimumScaleFactor(0.8)
-                    .foregroundStyle(model.isDemo || model.snapshot?.isFresh(at: model.now) != true ? Color.orange : Color.primary)
-                    .padding(.horizontal, 4).padding(.vertical, 3)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
-                    .padding(.top, 8)
-                    .accessibilityHint("Swipe left along the bottom for settings.")
-                Spacer(minLength: 0)
-                Button { model.riding ? model.stopRide() : model.startRide() } label: {
-                    Label(model.riding ? "End" : "Ride", systemImage: model.riding ? "stop.fill" : "bicycle")
-                        .font(.system(size: 11, weight: .bold)).lineLimit(1)
-                        .fixedSize(horizontal: true, vertical: false).padding(.horizontal, 5).frame(height: 28)
-                        .foregroundStyle(.orange).background(.regularMaterial, in: Capsule())
-                        .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
-                }.buttonStyle(MapControlButtonStyle())
-                    .accessibilityIdentifier("map.ride")
-            }
-            .contentShape(Rectangle())
-            // A swipe area outside MapKit's pan recognizer preserves map dragging.
-            .simultaneousGesture(DragGesture(minimumDistance: 24).onEnded { value in
-                if value.translation.width < -35 && abs(value.translation.width) > abs(value.translation.height) * 1.5 {
-                    model.page = .settings
-                }
-            })
+    @ViewBuilder
+    private var destinationControl: some View {
+        if let target = model.target {
+            Button { model.sheet = .station(target.id) } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: "flag.fill")
+                    Text(target.name).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Text(model.freshCount(target, mode: .docks).map { "\($0) P" } ?? "\u{2013} P").bold()
+                }.font(.system(size: 9)).padding(.horizontal, 6).frame(height: 24)
+                    .background(.regularMaterial, in: Capsule())
+                    .frame(minHeight: 44).contentShape(Rectangle())
+            }.buttonStyle(MapControlButtonStyle())
+                .accessibilityIdentifier("map.destination")
         }
     }
 
@@ -201,7 +147,7 @@ struct DockMapView: View {
     }
 }
 
-private struct MapControlButtonStyle: ButtonStyle {
+struct MapControlButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label.opacity(configuration.isPressed ? 0.55 : 1)
     }

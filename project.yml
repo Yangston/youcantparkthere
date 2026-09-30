@@ -37,7 +37,7 @@ targets:
         CFBundleDisplayName: You Can't Park There
         WKApplication: true
         WKWatchOnly: true
-        NSLocationWhenInUseUsageDescription: Find nearby Bike Share Toronto stations and keep the dock map centered during a ride you start.
+        NSLocationWhenInUseUsageDescription: Find Bike Share Toronto stations and keep navigation updated during automatically detected cycling when you enable detection.
         NSMotionUsageDescription: Detect cycling while this app is running so it can switch to the parking map. Motion data stays on your watch.
         UIBackgroundModes: [location]
         CFBundleURLTypes:

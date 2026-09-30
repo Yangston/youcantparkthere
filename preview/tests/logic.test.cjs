@@ -2,6 +2,15 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const api = require("../logic.js");
 const fixtures = require("../fixtures.json");
+test("dense viewport selects 30 closest stations to its center", () => {
+  const scenario = fixtures.scenarios.find(s => s.id === "dense");
+  const stations = api.stationsFor(fixtures, scenario);
+  assert.equal(stations.length, 60);
+  assert.deepEqual(api.visibleStations(stations, api.defaultViewport()).map(s => s.id),
+    Array.from({ length: 30 }, (_, i) => `cluster-${String(i).padStart(2, "0")}`));
+  const moved = { ...api.defaultViewport(), center: { latitude: 43.655, longitude: -79.3832 } };
+  assert.notDeepEqual(api.visibleStations(stations, moved).map(s => s.id), api.visibleStations(stations, api.defaultViewport()).map(s => s.id));
+});
 test("panning culls offscreen markers and returning restores them", () => {
   const all = api.visibleStations(fixtures.stations, api.defaultViewport());
   assert.equal(all.length, 4);

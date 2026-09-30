@@ -10,18 +10,30 @@ final class MapViewportTests: XCTestCase {
         StationSnapshot(stations: stations, updatedAt: .distantPast, fetchedAt: .distantPast)
     }
 
-    func testPanningUsesCameraInsteadOfGPSAndDoesNotStopAtFortyStations() {
+    func testPanningUsesCameraInsteadOfGPSAndCapsAtThirtyStations() {
         let remote = Coordinate(latitude: 43.75, longitude: -79.4)
         XCTAssertGreaterThan(remote.distance(to: .toronto), 5_000)
         let stations = [station("home", .toronto)] + (0..<60).map { station("remote-\($0)", remote) }
         let feed = snapshot(stations)
         XCTAssertEqual(StationPlanner.visible(feed, in: MapViewport(center: .toronto)).map(\.id), ["home"])
         let visible = StationPlanner.visible(feed, in: MapViewport(center: remote))
-        XCTAssertEqual(visible.count, 60)
+        XCTAssertEqual(visible.count, 30)
+        XCTAssertEqual(visible.map(\.id), (0..<60).map { "remote-\($0)" }.sorted().prefix(30).map { $0 })
         XCTAssertFalse(visible.contains { $0.id == "home" })
         // Moving back restores cached stations, including unknown/closed inventory.
         XCTAssertEqual(StationPlanner.visible(feed, in: MapViewport(center: .toronto)).map(\.id), ["home"])
         XCTAssertEqual(feed.stations.count, 61)
+    }
+
+    func testNearestThirtyChangeWithCameraCenterRegardlessOfFeedOrder() {
+        let stations = (0..<60).map { index in
+            station(String(format: "%02d", index), Coordinate(latitude: Double(index) * 0.0001, longitude: 0))
+        }
+        let feed = snapshot(Array(stations.reversed()))
+        let left = MapViewport(center: Coordinate(latitude: 0, longitude: 0), latitudeSpan: 0.02, longitudeSpan: 0.02)
+        let right = MapViewport(center: Coordinate(latitude: 0.0059, longitude: 0), latitudeSpan: 0.02, longitudeSpan: 0.02)
+        XCTAssertEqual(StationPlanner.visible(feed, in: left).map(\.id), Array(stations.prefix(30)).map(\.id))
+        XCTAssertEqual(Set(StationPlanner.visible(feed, in: right).map(\.id)), Set(stations.suffix(30).map(\.id)))
     }
 
     func testOverscanAndCullingAtViewportBoundary() {

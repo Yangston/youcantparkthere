@@ -4,23 +4,20 @@ import ParkCore
 struct RideSettingsView: View {
     @EnvironmentObject private var model: AppModel
     @AppStorage("autoDetect") private var autoDetect = false
-    @AppStorage("suggestRide") private var suggestRide = true
+    @AppStorage("suggestRide") private var suggestCycling = true
     var body: some View {
         List {
-            Text("Ride & settings").font(.headline)
+            Text("Settings").font(.headline)
             if model.locationDenied, let error = model.error {
                 Text(error).font(.caption2).foregroundStyle(.orange)
             }
-            if let start = model.ridingSince { Text(start, style: .timer).font(.title2.monospacedDigit()) }
-            Button(model.riding ? "End ride" : "Start ride") { model.riding ? model.stopRide() : model.startRide() }
-                .tint(model.riding ? .red : .orange)
-            Toggle("Detect cycling", isOn: $autoDetect).onChange(of: autoDetect) { _, _ in model.settingsChanged() }
+            Toggle("Automatic cycling", isOn: $autoDetect).onChange(of: autoDetect) { _, _ in model.settingsChanged() }
             Text(model.motionStatus).font(.caption2).foregroundStyle(.secondary)
-            Text("Switches to parking after sustained cycling while the app is open. Cannot launch a closed app. End rides manually; traffic lights won't stop them.")
+            Text("Detects sustained cycling while this app can run, switches to Park, and stops after sustained walking, driving, or a longer standstill. Turn this off to stop detection and background navigation immediately. A closed app cannot detect cycling.")
                 .font(.caption2).foregroundStyle(.secondary)
-            Toggle("Ride shortcut", isOn: $suggestRide).onChange(of: suggestRide) { _, _ in model.rideSuggestionChanged() }
-            Text(model.rideSuggestionStatus).font(.caption2).foregroundStyle(.secondary)
-            Text("Suggests a dock-map shortcut in Smart Stack while Ride is active. Clock-screen hints depend on watchOS and your Smart Stack settings. A closed app cannot detect cycling.")
+            Toggle("Cycling shortcut", isOn: $suggestCycling).onChange(of: suggestCycling) { _, _ in model.cyclingSuggestionChanged() }
+            Text(model.cyclingSuggestionStatus).font(.caption2).foregroundStyle(.secondary)
+            Text("Requests a Smart Stack suggestion after cycling is detected. watchOS chooses placement and clock-screen hints; the app cannot force the top position.")
                 .font(.caption2).foregroundStyle(.secondary)
             Button(model.refreshing ? "Refreshing…" : "Refresh stations") { Task { await model.refresh(manual: true) } }.disabled(model.refreshing)
             Button("Enable / check GPS") { model.requestLocation() }
@@ -31,7 +28,7 @@ struct RideSettingsView: View {
             Text("Keep the map handy").font(.headline)
             Text("Watch Settings → General → Return to Clock → this app → After 1 hour. Add the Find Docks complication for one-tap access.")
                 .font(.caption2)
-            Text("Ride mode uses background location for navigation and may use more battery. It stops after 90 minutes. No HealthKit workout is created.").font(.caption2)
+            Text("Detected cycling uses background location for navigation, up to 90 minutes, with a five-minute restart pause after the time limit or opt-out. No workout is recorded. Detection cannot guarantee updates while watchOS suspends the app.").font(.caption2)
             Text("Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.")
                 .font(.caption2).foregroundStyle(.secondary)
         }

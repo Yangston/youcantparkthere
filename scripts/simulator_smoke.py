@@ -96,7 +96,7 @@ def finish_launch(watch_id: str, pid: int) -> None:
 
 def validate_report(report: dict, mode: str) -> None:
     expected = {'url': f'youcantparkthere://{mode}', 'accepted': True, 'demo': True,
-                'mode': 'bikes' if mode == 'bikes' else 'docks', 'riding': mode == 'ride', 'screen': 'map'}
+                'mode': 'bikes' if mode == 'bikes' else 'docks', 'cycling': False, 'screen': 'map'}
     if mode not in ('docks', 'bikes', 'ride') or report != expected:
         raise RuntimeError(f'Route state mismatch: expected {expected}, got {report}')
 

@@ -12,14 +12,15 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var snapshot: StationSnapshot? { didSet { updateVisibleStations() } }
     @Published var mode: SearchMode = .docks
     @Published var page: AppPage = .map
+    @Published var recenterRequest = 0
     @Published var sheet: MapSheet?
     @Published private(set) var visibleStations: [Station] = []
     private(set) var mapViewport = MapViewport(center: .toronto)
-    @Published var rideSuggestionStatus = "watchOS chooses when to show the shortcut."
+    @Published var cyclingSuggestionStatus = "watchOS chooses when to show the shortcut."
     @Published var origin: Coordinate?
     @Published var locationDate: Date?
     @Published var now = Date()
-    @Published var ridingSince: Date?
+    @Published var cyclingSince: Date?
     @Published var targetID: String?
     @Published var error: String?
     @Published var fullTarget: String?
@@ -32,18 +33,17 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let client = GBFSClient()
     private let location = CLLocationManager()
     private let motion = CMMotionActivityManager()
-    private var detector = RideDetector()
+    private var detector = CyclingDetector()
     private var targetMonitor = TargetAvailabilityMonitor()
     private var loop: Task<Void, Never>?
     private var active = false
     private var monitoringMotion = false
-    private var pendingRide = false
     private var arrivedTarget: String?
     private var nextRefresh = Date.distantPast
     private var failures = 0
     private var suggestionUpdate: Task<Void, Never>?
 
-    var riding: Bool { ridingSince != nil }
+    var cycling: Bool { cyclingSince != nil }
     var center: Coordinate { origin ?? .toronto }
     var target: Station? { snapshot?.stations.first { $0.id == targetID } }
     var locationLabel: String {
@@ -59,7 +59,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         return "Updated \(seconds)s ago"
     }
     var autoDetect: Bool { UserDefaults.standard.bool(forKey: "autoDetect") }
-    var suggestRide: Bool { UserDefaults.standard.object(forKey: "suggestRide") as? Bool ?? true }
+    var suggestCycling: Bool { UserDefaults.standard.object(forKey: "suggestRide") as? Bool ?? true }
     private var cacheURL: URL? {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
             .appendingPathComponent("stations-v1.json")
@@ -81,7 +81,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         now = Date()
         if value { updateAuthorization() }
         configureServices()
-        if value { updateRideSuggestion() }
+        if value { updateCyclingSuggestion() }
     }
     func requestLocation() {
         guard !isDemo else { return }
@@ -93,44 +93,53 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         default: configureServices()
         }
     }
-    func startRide() {
-        guard !riding else { mode = .docks; page = .map; sheet = nil; return }
-        if !isDemo && location.authorizationStatus == .notDetermined {
-            pendingRide = true; requestLocation(); return
-        }
-        guard isDemo || location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways else {
-            pendingRide = false; requestLocation(); return
-        }
-        ridingSince = Date(); mode = .docks; page = .map; sheet = nil
+    private func beginDetectedCycling() {
+        guard !cycling, autoDetect else { return }
+        cyclingSince = Date(); mode = .docks; page = .map; sheet = nil
         detector.reset()
-        // Actual background navigation is configured below. watchOS 7+ ignores
-        // the deprecated frontmost-timeout override; Return to Clock is user controlled.
         WKInterfaceDevice.current().play(.start)
         configureServices()
-        updateRideSuggestion()
+        updateCyclingSuggestion()
     }
-    func stopRide() {
-        ridingSince = nil; pendingRide = false; detector.suppress(at: Date())
+    private func finishDetectedCycling(suppressRestart: Bool = false) {
+        cyclingSince = nil
+        if suppressRestart { detector.suppress(at: Date()) } else { detector.reset() }
         arrivedTarget = nil; targetMonitor = TargetAvailabilityMonitor()
-        WKInterfaceDevice.current().play(.stop)
         configureServices()
-        updateRideSuggestion()
+        updateCyclingSuggestion()
     }
     func tick() {
         guard !isDemo else { return }
         now = Date()
-        if autoDetect && !riding && active && detector.shouldStart(at: now) { startRide() }
-        if let since = ridingSince, now.timeIntervalSince(since) > 5_400 {
-            stopRide(); error = "Ride mode stopped after 90 minutes to save battery. Start it again to continue."
+        let permission = CMMotionActivityManager.authorizationStatus()
+        if cycling && (!autoDetect || permission == .denied || permission == .restricted) {
+            finishDetectedCycling(suppressRestart: true)
+            return
+        }
+        if let since = cyclingSince, now.timeIntervalSince(since) >= 5_400 {
+            finishDetectedCycling(suppressRestart: true)
+            motionStatus = "Detection paused after 90 minutes."
+        } else if cycling && detector.shouldStop(at: now) {
+            finishDetectedCycling()
+            motionStatus = "Not cycling"
+        } else if autoDetect && permission == .authorized && !cycling && active && detector.shouldStart(at: now) {
+            beginDetectedCycling()
         }
     }
-    func settingsChanged() { detector.reset(); configureServices(); updateRideSuggestion() }
-    func rideSuggestionChanged() { updateRideSuggestion() }
-    private func updateRideSuggestion() {
+    func settingsChanged() {
+        if !autoDetect {
+            // Disabling automatic detection is the immediate stop/opt-out.
+            finishDetectedCycling(suppressRestart: true)
+        } else {
+            detector.reset(); configureServices(); updateCyclingSuggestion()
+        }
+    }
+    func cyclingSuggestionChanged() { updateCyclingSuggestion() }
+    private func updateCyclingSuggestion() {
         guard !isDemo else { return }
         let previous = suggestionUpdate
-        let start = suggestRide ? ridingSince : nil
-        // Serialize donations so a delayed start cannot overwrite a later End.
+        let start = suggestCycling ? cyclingSince : nil
+        // Serialize donations so a delayed detection cannot overwrite a later stop.
         suggestionUpdate = Task { [weak self] in
             await previous?.value
             var intents: [RelevantIntent] = []
@@ -140,11 +149,11 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
             do {
                 try await RelevantIntentManager.shared.updateRelevantIntents(intents)
-                self?.rideSuggestionStatus = start == nil
-                    ? "Suggested after Ride starts. watchOS controls placement."
-                    : "Ride shortcut suggested to Smart Stack. watchOS controls placement."
+                self?.cyclingSuggestionStatus = start == nil
+                    ? "Suggested after cycling is detected. watchOS controls placement."
+                    : "Cycling shortcut suggested to Smart Stack. watchOS controls placement."
             } catch {
-                self?.rideSuggestionStatus = "Smart Stack suggestion unavailable. The complication still opens the map."
+                self?.cyclingSuggestionStatus = "Smart Stack suggestion unavailable. The complication still opens the map."
             }
         }
     }
@@ -190,7 +199,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
                 try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
                 if let data = try? JSONEncoder().encode(result) { try? data.write(to: url, options: .atomic) }
             }
-            if riding && targetMonitor.update(target: target, snapshot: result, now: now) {
+            if cycling && targetMonitor.update(target: target, snapshot: result, now: now) {
                 fullTarget = "\(target?.name ?? "Your station") is now full. Choose another station."
                 WKInterfaceDevice.current().play(.notification)
             }
@@ -198,25 +207,26 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         catch {
             failures += 1
             nextRefresh = Date().addingTimeInterval(min(300, 30 * pow(2, Double(min(failures, 4)))))
-            self.error = snapshot == nil ? "Couldn't load stations. \(error.localizedDescription)" : "Offline / feed unavailable. Check the timestamps before riding to a station."
+            self.error = snapshot == nil ? "Couldn't load stations. \(error.localizedDescription)" : "Offline / feed unavailable. Check the timestamps before cycling to a station."
         }
     }
     private func configureServices() {
         guard !isDemo else { return }
         let authorized = location.authorizationStatus == .authorizedWhenInUse || location.authorizationStatus == .authorizedAlways
-        if !isDemo && authorized && (active || riding) {
-            location.desiredAccuracy = riding ? kCLLocationAccuracyNearestTenMeters : kCLLocationAccuracyHundredMeters
-            location.distanceFilter = riding ? 20 : 50
-            location.allowsBackgroundLocationUpdates = riding
+        if !isDemo && authorized && (active || cycling) {
+            location.desiredAccuracy = cycling ? kCLLocationAccuracyNearestTenMeters : kCLLocationAccuracyHundredMeters
+            location.distanceFilter = cycling ? 20 : 50
+            location.allowsBackgroundLocationUpdates = cycling
             location.startUpdatingLocation()
-        } else { location.stopUpdatingLocation() }
+        } else { location.allowsBackgroundLocationUpdates = false; location.stopUpdatingLocation() }
         configureMotion()
-        if active || riding {
+        if active || cycling {
             if loop == nil {
                 loop = Task { [weak self] in
                     while !Task.isCancelled {
                         guard let self else { return }
                         self.tick()
+                        guard !Task.isCancelled else { return }
                         await self.refresh()
                         do { try await Task.sleep(nanoseconds: 5_000_000_000) } catch { return }
                     }
@@ -227,33 +237,36 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     private func configureMotion() {
-        guard active && autoDetect && !isDemo else {
+        guard (active || cycling) && autoDetect && !isDemo else {
             if monitoringMotion { motion.stopActivityUpdates(); monitoringMotion = false; detector.reset() }
             motionStatus = autoDetect ? "Open app to detect" : "Off"
             return
         }
         guard CMMotionActivityManager.isActivityAvailable() else { motionStatus = "Not available on this watch"; return }
         let permission = CMMotionActivityManager.authorizationStatus()
-        guard permission != .denied && permission != .restricted else { motionStatus = "Motion permission denied"; return }
+        guard permission != .denied && permission != .restricted else {
+            motion.stopActivityUpdates(); monitoringMotion = false; detector.reset()
+            motionStatus = "Motion permission denied"; return
+        }
         guard !monitoringMotion else { return }
-        monitoringMotion = true; motionStatus = "Listening while open"
+        monitoringMotion = true; motionStatus = "Watching for cycling"
         motion.startActivityUpdates(to: .main) { [weak self] activity in
             guard let activity else { return }
-            let cycling = activity.cycling
+            let isCycling = activity.cycling
+            let stationary = activity.stationary
             let confident = activity.confidence != .low
             let conflicting = activity.automotive || activity.walking || activity.running || activity.stationary
             Task { @MainActor [weak self] in
                 guard let self else { return }
-                self.detector.observe(cycling: cycling, confident: confident, conflicting: conflicting, at: Date())
-                self.motionStatus = cycling && confident && !conflicting ? "Cycling detected" : "Listening while open"
+                self.detector.observe(cycling: isCycling, confident: confident, conflicting: conflicting, stationary: stationary, at: Date())
+                self.motionStatus = isCycling && confident && !conflicting ? "Cycling detected"
+                    : confident && !isCycling && conflicting ? "Not cycling / confirming" : "Activity unclear"
+                self.tick()
             }
         }
     }
     private func updateAuthorization() {
         locationDenied = location.authorizationStatus == .denied || location.authorizationStatus == .restricted
-        if pendingRide && (location.authorizationStatus == .authorizedAlways || location.authorizationStatus == .authorizedWhenInUse) {
-            pendingRide = false; startRide()
-        } else if locationDenied { pendingRide = false }
     }
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         updateAuthorization(); configureServices()
@@ -263,7 +276,7 @@ final class AppModel: NSObject, ObservableObject, CLLocationManagerDelegate {
               abs(point.timestamp.timeIntervalSinceNow) <= 60 else { return }
         origin = Coordinate(latitude: point.coordinate.latitude, longitude: point.coordinate.longitude)
         locationDate = point.timestamp
-        if riding, let target, let origin, arrivedTarget != target.id,
+        if cycling, let target, let origin, arrivedTarget != target.id,
            origin.distance(to: target.coordinate) < 60,
            (snapshot?.usableCount(target, mode: .docks, at: Date()) ?? 0) > 0 {
             arrivedTarget = target.id

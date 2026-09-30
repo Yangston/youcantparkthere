@@ -35,6 +35,11 @@ class PreviewTests(unittest.TestCase):
         self.assertEqual(panned['counts'], [12, 0, 3, 8])
         self.assertEqual(preview_report.expected_state(self.scenario('panned-empty'))['visibleStationIDs'], [])
 
+    def test_dense_map_renders_only_nearest_thirty(self):
+        value = preview_report.expected_state(self.scenario('dense'))
+        self.assertEqual(len(value['counts']), 60)
+        self.assertEqual(value['visibleStationIDs'], [f'cluster-{i:02d}' for i in range(30)])
+
     def test_electric_counts_and_removed_list_screen(self):
         self.assertEqual(preview_report.expected_state(self.scenario('bike-types-unknown'))['counts'], [4, 9, 6, 12])
         self.assertEqual(preview_report.expected_state(self.scenario('stale'))['electricCounts'], [None] * 4)

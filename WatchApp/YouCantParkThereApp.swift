@@ -20,15 +20,6 @@ struct YouCantParkThereWatchApp: App {
     }
 }
 
-struct StartRideIntent: AppIntent {
-    static var title: LocalizedStringResource = "Start Bike Share Ride"
-    static var description = IntentDescription("Open the dock map and start a user-requested navigation session. Does not unlock a bike.")
-    static var openAppWhenRun = true
-    @MainActor func perform() async throws -> some IntentResult {
-        AppModel.shared.startRide()
-        return .result()
-    }
-}
 struct FindDocksIntent: AppIntent {
     static var title: LocalizedStringResource = "Find Bike Share Docks"
     static var openAppWhenRun = true
@@ -41,7 +32,5 @@ struct ParkingShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: FindDocksIntent(), phrases: ["Find a dock with \(.applicationName)"],
                     shortTitle: "Find docks", systemImageName: "parkingsign.circle")
-        AppShortcut(intent: StartRideIntent(), phrases: ["Start a ride with \(.applicationName)"],
-                    shortTitle: "Start ride", systemImageName: "bicycle")
     }
 }

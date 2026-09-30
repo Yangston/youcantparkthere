@@ -46,12 +46,12 @@
       mode: scenario.mode,
       page: scenario.page,
       viewport: api.viewportFor(scenario),
-      riding: scenario.riding,
+      cycling: scenario.cycling,
       target: scenario.target,
       selected: "demo-0",
       favorites: new Set(),
       suggest: true,
-      detect: false,
+      detect: !!scenario.cycling,
     };
     $("scenario-title").textContent = scenario.title;
     $("scenario-group").textContent = scenario.group.toUpperCase();
@@ -96,7 +96,8 @@
     // handlers before rendering Map so a later map drag cannot change pages.
     screen.onpointerdown = screen.onpointerup = screen.onpointercancel = null;
     screen.classList.toggle("large-text", !!scenario.largeText);
-    screen.classList.toggle("sheet-screen", state.page !== "map");
+    screen.classList.toggle("sheet-screen", !["map", "settings"].includes(state.page));
+    screen.classList.toggle("settings-page", state.page === "settings");
     const data = stations();
     $("state").innerHTML = [
       [
@@ -113,10 +114,10 @@
               ? "Stale"
               : "Fresh sample",
       ],
-      ["Ride", state.riding ? "Active (simulated)" : "Stopped"],
+      ["Cycling", state.cycling ? "Detected (sample)" : "Not detected"],
       [
         "Clock shortcut",
-        state.riding && state.suggest
+        state.cycling && state.suggest
           ? "Suggested; OS decides"
           : "Not requested",
       ],
@@ -126,12 +127,13 @@
       .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`)
       .join("");
     if (state.page === "map") {
-      screen.innerHTML = `<div class="map-screen">
+      screen.innerHTML = `<div class="map-screen"><div class="map-canvas">
         <div class="sample-map"><svg viewBox="0 0 200 240" preserveAspectRatio="none" aria-hidden="true"><path fill="#344138" d="M0 0h200v240H0z"/><path stroke="#536057" stroke-width="9" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path stroke="#2b342e" stroke-width="3" d="M-20 100L210 55M-20 170L230 120M50 -20L120 280M145 -20L210 270"/><path fill="#3e5544" d="M15 45h40v30H15zM105 133h35v45h-35z"/><text x="8" y="209" fill="#a6b6ab" font-size="6">SAMPLE MAP</text></svg>
         <div class="sample-pins"></div>
         ${scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
-        ${!scenario.data ? '<div class="watch-header"><button id="retry">Retry stations</button></div>' : `<div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "\u24c5 Park" : "\u2667 Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">\u2197</button></div>`}
-        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><span>${scenario.data ? "DEMO · not live" : "No station data"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
+        ${!scenario.data ? '<div class="map-overlay"><button id="retry">Retry stations</button></div>' : ""}
+        ${state.target ? `<button id="target" class="target-label">\u2691 ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}</div>
+        <div class="bottom-navigation"><div class="map-bottom"><div><span>${scenario.data ? "DEMO \u00b7 not live" : "No station data"}</span></div><button id="gps" aria-label="Recenter"><span>\u2197</span></button><button id="toggle-mode"><span>${state.mode === "docks" ? "Park" : "Bikes"}</span></button></div></div></div>`;
       if ($("toggle-mode")) $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
         render();
@@ -143,8 +145,7 @@
       };
       renderPins();
       bindMapPan(screen.querySelector(".sample-map"));
-      bindPageSwipe(screen.querySelector(".map-bottom"));
-      $("ride").onclick = toggleRide;
+      bindPageSwipe(screen.querySelector(".bottom-navigation"));
       if ($("target")) $("target").onclick = () => openStation(state.target);
       if ($("retry"))
         $("retry").onclick = () => {
@@ -191,11 +192,13 @@
         render();
       };
     } else {
-      screen.innerHTML = `<div class="watch-title">Ride & settings</div><button class="wide" id="ride">${state.riding ? "End ride" : "Start ride"}</button><label class="watch-toggle">Detect cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">Only while the app is open. Cannot launch a closed app.</p><label class="watch-toggle">Ride shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Smart Stack suggestion while Ride is active. watchOS decides whether a clock-screen hint appears.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">In Bikes mode, lightning means e-bikes are available. Tap a station for the breakdown.</p><p class="watch-copy">Ride uses background location and stops after 90 minutes.</p>`;
-      bindPageSwipe(screen);
-      $("ride").onclick = toggleRide;
+      screen.innerHTML = `<div class="settings-content"><div class="watch-title">Settings</div><label class="watch-toggle">Automatic cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.cycling ? "Cycling detected (sample)." : "Not cycling (sample)."} Detection starts while the app can run. It cannot wake a closed app.</p><p class="watch-copy">Stops after sustained non-cycling activity. Turn detection off to stop immediately.</p><label class="watch-toggle">Cycling shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Requests a Smart Stack suggestion after cycling is detected. watchOS controls placement and clock hints.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">Lightning means e-bikes are available.</p><p class="watch-copy">Automatic navigation stops after 90 minutes. No workout is recorded.</p></div><div class="bottom-navigation"><div class="settings-swipe-hint">Swipe right for map</div></div>`;
+      bindPageSwipe(screen.querySelector(".settings-content"));
+      bindPageSwipe(screen.querySelector(".bottom-navigation"));
       $("detect").onchange = (e) => {
         state.detect = e.target.checked;
+        if (!state.detect) state.cycling = false;
+        render();
         note("No motion sensing occurs in this preview.");
       };
       $("suggest").onchange = (e) => {
@@ -209,7 +212,7 @@
     for (const button of screen.querySelectorAll("[data-station]"))
       button.onclick = () => openStation(button.dataset.station);
     if (["map", "settings"].includes(state.page)) {
-      screen.insertAdjacentHTML("beforeend", `<div class="watch-pages"><button aria-label="Map page" aria-current="${state.page === "map"}"><span></span></button><button aria-label="Settings page" aria-current="${state.page === "settings"}"><span></span></button></div>`);
+      screen.querySelector(".bottom-navigation").insertAdjacentHTML("beforeend", `<div class="watch-pages"><button aria-label="Map page" aria-current="${state.page === "map"}"><span></span></button><button aria-label="Settings page" aria-current="${state.page === "settings"}"><span></span></button></div>`);
       screen.querySelectorAll(".watch-pages button").forEach((button, index) => {
         button.onclick = () => { state.page = index ? "settings" : "map"; render(); };
       });
@@ -256,10 +259,18 @@
   function bindPageSwipe(surface) {
     let start;
     surface.onpointerdown = e => { start = { x: e.clientX, y: e.clientY }; };
+    surface.onpointermove = e => {
+      if (!start) return;
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      if (Math.abs(dx) >= 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        surface.setPointerCapture(e.pointerId);
+      }
+    };
     surface.onpointerup = e => {
       if (!start) return;
       const dx = e.clientX - start.x, dy = e.clientY - start.y;
       start = null;
+      if (surface.hasPointerCapture(e.pointerId)) surface.releasePointerCapture(e.pointerId);
       if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
       if (state.page === "map" && dx < 0) state.page = "settings";
       else if (state.page === "settings" && dx > 0) state.page = "map";
@@ -273,17 +284,6 @@
     state.selected = id;
     state.page = "detail";
     render();
-  }
-  function toggleRide() {
-    state.riding = !state.riding;
-    if (state.riding) {
-      state.mode = "docks";
-      state.page = "map";
-    }
-    render();
-    note(
-      "Ride is simulated. Automatic clock hints must be checked on your Watch.",
-    );
   }
 
   const captured = fixtures.scenarios.filter((s) =>

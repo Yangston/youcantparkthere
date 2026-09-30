@@ -22,7 +22,7 @@ extension AppModel {
         switch route {
         case .docks: mode = .docks
         case .bikes: mode = .bikes
-        case .ride: startRide()
+        case .ride: mode = .docks // Legacy link now opens the map; it never starts a session.
         }
         return true
     }
@@ -44,7 +44,7 @@ enum SimulatorSmoke {
         let accepted = model.open(url)
         let report: [String: Any] = [
             "url": url.absoluteString, "accepted": accepted, "demo": model.isDemo,
-            "mode": model.mode.rawValue, "riding": model.riding, "screen": model.sheet?.screen ?? model.page.rawValue
+            "mode": model.mode.rawValue, "cycling": model.cycling, "screen": model.sheet?.screen ?? model.page.rawValue
         ]
         do {
             let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
