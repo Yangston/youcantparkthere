@@ -133,7 +133,8 @@ struct DockMapView: View {
                 }
                 Button { model.riding ? model.stopRide() : model.startRide() } label: {
                     Label(model.riding ? "End" : "Ride", systemImage: model.riding ? "stop.fill" : "bicycle")
-                        .font(.system(size: 11, weight: .bold)).frame(minHeight: 28)
+                        .font(.system(size: 11, weight: .bold)).lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false).frame(minHeight: 28)
                 }.buttonStyle(.plain).foregroundStyle(.orange)
             }.padding(.horizontal, 6).padding(.vertical, 3)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 11))
