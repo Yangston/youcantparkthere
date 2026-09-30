@@ -133,7 +133,7 @@
           .join("")}
         ${!scenario.data ? '<div class="map-overlay">Stations unavailable<button id="retry">Retry sample</button></div>' : scenario.empty ? '<div class="map-overlay">No stations in this snapshot</div>' : ""}</div>
         <div class="watch-header"><button id="toggle-mode">${state.mode === "docks" ? "Ⓟ Park" : "♧ Bikes"}</button></div><div class="map-utilities"><button id="gps" aria-label="Recenter">↗</button><button id="settings" aria-label="Ride and settings">⚙</button></div>
-        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><div class="watch-demo">DEMO</div><span>${scenario.error ? "Connection issue · settings" : "Sample data · not live"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
+        <div class="map-footer">${state.target ? `<button id="target" class="target-label">⚑ ${esc(data.find((s) => s.id === state.target)?.name || "Destination")}</button>` : ""}<div class="map-bottom"><div><div class="watch-demo">DEMO</div><span>${scenario.error ? "Connection issue" : "Sample data · not live"}</span></div><button class="plain" id="ride">${state.riding ? "■ End" : "♧ Ride"}</button></div></div></div>`;
       $("toggle-mode").onclick = () => {
         state.mode = state.mode === "docks" ? "bikes" : "docks";
         render();

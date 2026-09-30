@@ -130,7 +130,7 @@ struct DockMapView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(model.locationLabel).lineLimit(2)
                         .foregroundStyle(model.isDemo ? .orange : .primary)
-                    Text(model.error == nil ? model.freshnessLabel : "Connection issue · settings")
+                    Text(model.error == nil ? model.freshnessLabel : "Connection issue")
                         .foregroundStyle(model.error == nil ? Color.secondary : Color.orange)
                 }.font(.system(size: 8)).lineLimit(1).minimumScaleFactor(0.8)
                     .padding(.horizontal, 4).padding(.vertical, 3)
