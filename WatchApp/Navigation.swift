@@ -5,11 +5,15 @@ enum AppPage: String { case map, settings }
 
 enum MapSheet: Identifiable {
     case station(String)
+    case privacy
     var id: String {
-        switch self { case .station(let id): return "station-" + id }
+        switch self {
+        case .station(let id): return "station-" + id
+        case .privacy: return "privacy"
+        }
     }
     var screen: String {
-        "detail"
+        switch self { case .station: return "detail"; case .privacy: return "privacy" }
     }
 }
 

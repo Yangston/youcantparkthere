@@ -40,10 +40,10 @@ struct BottomNavigationView: View {
                     }.buttonStyle(MapControlButtonStyle())
                         .accessibilityIdentifier("map.mode")
                         .accessibilityHint("Switch between parking and bikes")
-                }.padding(.horizontal, 4).frame(height: 44)
+                }.padding(.horizontal, 8).frame(height: 44).offset(y: 3)
             } else {
                 Text("Swipe right for map").font(.system(size: 10)).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity).frame(height: 44)
+                    .frame(maxWidth: .infinity).frame(height: 22)
             }
             HStack(spacing: 5) {
                 Circle().fill(model.page == .map ? .white : .gray).frame(width: 5, height: 5)

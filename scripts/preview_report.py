@@ -36,7 +36,7 @@ def expected_state(scenario, fixtures=None):
             distance = 6371000 * 2 * math.atan2(math.sqrt(max(0, min(1, arc))), math.sqrt(max(0, 1 - arc)))
             visible_ids.append((distance, station['id']))
     return {'scenario': scenario['id'], 'demo': True, 'mode': scenario['mode'],
-            'cycling': scenario['cycling'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail') else 'map',
+            'cycling': scenario['cycling'], 'screen': scenario['page'] if scenario['page'] in ('settings', 'detail', 'privacy') else 'map',
             'electricCounts': electric_counts, 'standardCounts': standard_counts,
             'favoriteStationIDs': sorted(scenario.get('favorites', [])),
             'counts': counts, 'visibleStationIDs': [ident for _, ident in sorted(visible_ids)[:30]]}
@@ -65,7 +65,7 @@ def write_viewer(output, manifest):
     baseline = None
     if baseline_path.is_file() and baseline_path.resolve().is_relative_to(output.resolve()):
         baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
-    payload = json.dumps({'report': manifest, 'fixtures': catalog(), 'baseline': baseline}, ensure_ascii=True).replace('<', '\\u003c')
+    payload = json.dumps({'report': manifest, 'fixtures': catalog(), 'baseline': baseline, 'privacy': json.loads((ROOT / 'app-store/privacy-policy.json').read_text(encoding='utf-8'))}, ensure_ascii=True).replace('<', '\\u003c')
     (output / 'report.js').write_text('window.PARK_DATA = ' + payload + ';\n', encoding='utf-8')
 
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import plistlib
 import subprocess
 import sys
@@ -26,6 +27,7 @@ class ArchivePermissionTests(unittest.TestCase):
         }
         self.write_plist(self.watch, self.watch_info)
         (self.watch / 'PrivacyInfo.xcprivacy').write_bytes(plistlib.dumps({}))
+        (self.watch / 'privacy-policy.json').write_text(json.dumps({'updated': '2026-09-30', 'supportURL': 'https://example.com', 'sections': [{'title': 'Privacy', 'body': 'Policy'}]}))
 
     def write_plist(self, bundle, info):
         (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))
@@ -54,6 +56,12 @@ class ArchivePermissionTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn('Container Info.plist', result.stderr)
                 self.assertIn('NSMotionUsageDescription', result.stderr)
+
+    def test_missing_policy_blocks_release(self):
+        (self.watch / 'privacy-policy.json').unlink()
+        result = self.check({'ITSWatchOnlyContainer': True, 'NSMotionUsageDescription': 'Detect cycling.'})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Missing offline privacy policy', result.stderr)
 
     def test_container_permission_does_not_replace_watch_permission(self):
         del self.watch_info['NSMotionUsageDescription']

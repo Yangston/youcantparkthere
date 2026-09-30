@@ -30,9 +30,13 @@ struct RideSettingsView: View {
                 .font(.caption2)
             Text("Detected cycling uses background location for navigation, up to 90 minutes, with a five-minute restart pause after the time limit or opt-out. No workout is recorded. Detection cannot guarantee updates while watchOS suspends the app.").font(.caption2)
             Text("Legal & data").font(.headline)
+            Button("Privacy policy") { model.sheet = .privacy }
+                .accessibilityIdentifier("settings.privacy")
             Link("Apple Maps terms", destination: URL(string: "https://www.apple.com/legal/internet-services/maps/terms-en.html")!)
                 .font(.caption2)
             Text("Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.")
+                .font(.caption2).foregroundStyle(.secondary)
+            Text("Contains information licensed under the Open Government Licence - Toronto.")
                 .font(.caption2).foregroundStyle(.secondary)
         }
     }

@@ -16,12 +16,14 @@ Open **http://127.0.0.1:8765**. The preview studio has an interactive behavior s
 1. Make a branch and edit the native app.
 2. Run local checks and explore the interaction sandbox.
 3. Push the branch and open a PR, or manually run **Build and test** for that branch.
-4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 17 states and compare an older capture folder.
+4. Download **watch-preview-compact** and **watch-preview-large** from the run. Extract and open `index.html` to review all 18 states and compare an older capture folder.
 5. Merge to `main`, wait for CI, and manually run **Upload to TestFlight** only when you want a Watch update.
 
 No Apple keys are required for previews. No push or PR automatically uploads to TestFlight.
 
 ## Guides
+
+- [First App Store release checklist](docs/APP_STORE_RELEASE.md): the remaining owner decisions, listing, privacy/support pages, screenshots and review submission.
 
 - [Development and preview workflow](docs/DEVELOPMENT.md): local commands, screenshot review, test coverage, adding scenarios.
 - [Release checklist](docs/RELEASING.md): exact-commit CI gate, TestFlight processing, installation and rollback.

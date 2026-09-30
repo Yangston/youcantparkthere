@@ -1,0 +1,11 @@
+Native, watch-only app. The iOS bundle is Apple's non-launchable watch-only distribution container; there is no iPhone app screen and no sign-in is required. Please test on an Apple Watch with watchOS 10 or later and Internet access.
+
+Coverage is Toronto, Canada. Reviewers outside Toronto can choose Browse downtown on first launch (or deny location); this opens real Toronto station data. With GPS enabled elsewhere, pan the map to Toronto to inspect station availability. There is no sample-data fallback in release/device builds.
+
+Use Park/Bikes at bottom right to switch counts. Tap a station for separate ordinary/electric counts and Favourite. The bottom controls and page dots also form a one-finger horizontal swipe surface for Settings; drag above them to pan the map.
+
+Automatic cycling is off by default. Enable it in Settings and allow Motion & Fitness to test. Confident unambiguous cycling for 12 seconds while the app is active can begin navigation. Background location is used only for that automatically detected cycling navigation. Walking/driving/running for 60 seconds or stationary evidence for 180 seconds stops navigation. Turning Automatic cycling off stops it immediately. Navigation also stops after 90 minutes, with a five-minute restart pause after timeout or opt-out. No workout, silent audio or extended-runtime workaround is used. A closed app cannot detect cycling. Smart Stack suggestions are system-controlled and are cleared on stop/timeout/opt-out.
+
+Privacy policy is available offline in Settings > Legal & data > Privacy policy. The app has no account, ads, analytics SDK or developer backend. It fetches public station data directly and does not upload GPS/motion to the operator feed. Public station inventory and favourites/preferences are cached locally.
+
+The attached native simulator screenshots use explicitly labelled sample availability. They show production SwiftUI screens; demo hooks are Debug + simulator-only and cannot activate in the submitted binary. Actual availability comes from Bike Share Toronto and may differ. Apple MapKit attribution is retained.

@@ -1,0 +1,35 @@
+{
+  "title": "Privacy policy",
+  "updated": "2026-09-30",
+  "supportURL": "https://yangston.github.io/youcantparkthere/",
+  "sections": [
+    {
+      "title": "About this app",
+      "body": "You Can't Park There is an independent Apple Watch app for finding Bike Share Toronto bikes and docks. No app account, advertising, tracking, analytics SDK or developer-operated backend is used."
+    },
+    {
+      "title": "Location",
+      "body": "With your permission, location is used on the watch to center the map and calculate station distances. The app does not upload your GPS coordinates to its developer or to the station feed. Apple Maps requests map content and may process location-related information under Apple’s policies. No trip or location history is recorded by this app."
+    },
+    {
+      "title": "Motion and background navigation",
+      "body": "Automatic cycling is off until you enable it. Core Motion activity is used on the watch to detect cycling while the app can run. The app does not send motion samples to its developer, record a workout, or use HealthKit. Background location is limited to detected cycling navigation, stops automatically, and has a 90-minute limit. Turn Automatic cycling off in Settings to stop it immediately. Detection cannot wake a closed app."
+    },
+    {
+      "title": "Data stored on your watch",
+      "body": "Favourites, preferences and a cache of public station information are stored locally. You can remove favourites and change preferences in the app. Removing the app removes its local data from that installation; operating-system backups are controlled by Apple and your device settings."
+    },
+    {
+      "title": "Network services",
+      "body": "Apple supplies the map. Bike Share Toronto’s public GBFS service supplies station information. Network providers receive requests and connection information such as IP addresses; their policies govern their services. The app does not attach your GPS or motion data to station-feed requests. Availability is not guaranteed and cached information may be stale."
+    },
+    {
+      "title": "Support and website",
+      "body": "If you contact support or open a public GitHub issue, you choose which information to send. It is used to respond to your request. Do not post precise locations, account credentials or other sensitive information in public issues. This app does not automatically attach logs or motion/location history. Our support pages have no analytics scripts or forms; their hosting provider may process ordinary web request information."
+    },
+    {
+      "title": "Your controls and contact",
+      "body": "You can deny or revoke location and Motion & Fitness permissions in your device privacy settings. The downtown map remains available without GPS. No in-app account exists to delete. For support or privacy questions, use Contact support below or the App Support link on the App Store product page. This policy will be updated when the app’s data practices change. You can email privacy or support questions to stoneyang17@gmail.com."
+    }
+  ]
+}

@@ -5,6 +5,7 @@ struct RootView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("onboarded") private var onboarded = false
+    private var footerHeight: CGFloat { model.page == .map ? 56 : 34 }
     private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     var body: some View {
         GeometryReader { geometry in
@@ -20,7 +21,7 @@ struct RootView: View {
                 } else {
                     RideSettingsView()
                         .padding(.top, max(geometry.safeAreaInsets.top, geometry.size.height * 0.14))
-                        .frame(width: geometry.size.width, height: max(0, geometry.size.height - 56))
+                        .frame(width: geometry.size.width, height: max(0, geometry.size.height - footerHeight))
                         .clipped().contentShape(Rectangle())
                         .simultaneousGesture(pageSwipe)
                         .frame(height: geometry.size.height, alignment: .top)
@@ -28,7 +29,7 @@ struct RootView: View {
                 }
                 // This transparent sibling owns the same bottom touch area.
                 // Its background is the live map, not a separately painted bar.
-                BottomNavigationView().frame(height: 56)
+                BottomNavigationView().frame(height: footerHeight)
                     .background(Color.clear.contentShape(Rectangle()))
                     .contentShape(Rectangle()).highPriorityGesture(pageSwipe)
             }
@@ -43,6 +44,7 @@ struct RootView: View {
         .sheet(item: $model.sheet) { sheet in
             switch sheet {
             case .station(let id): StationDetailView(stationID: id)
+            case .privacy: PrivacyPolicyView()
             }
         }
         .sheet(isPresented: Binding(get: { !onboarded && !model.isDemo }, set: { onboarded = !$0 })) {

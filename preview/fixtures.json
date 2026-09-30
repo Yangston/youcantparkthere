@@ -131,6 +131,18 @@
       "cycling": false
     },
     {
+      "id": "privacy",
+      "title": "Privacy policy",
+      "group": "Screens",
+      "page": "privacy",
+      "mode": "docks",
+      "age": 0,
+      "data": true,
+      "gps": true,
+      "description": "Offline in-app privacy policy available from Settings.",
+      "cycling": false
+    },
+    {
       "id": "onboarding",
       "title": "First launch",
       "group": "Screens",

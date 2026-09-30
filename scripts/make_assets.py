@@ -16,13 +16,13 @@ def main() -> None:
     for y in range(size):
         raw.append(0)
         for x in range(size):
-            # Bold parking P: vertical stem, rounded bowl, cutout, small availability dot.
+            # Parking sign: black P on white, with a green ring inside the Watch mask.
             stem = 300 <= x < 420 and 235 <= y < 790
             outer = 370 <= x <= 570 and 235 <= y < 575 or ((x - 570) / 170) ** 2 + ((y - 405) / 170) ** 2 <= 1
             hole = 420 <= x <= 568 and 340 <= y < 470 or ((x - 568) / 65) ** 2 + ((y - 405) / 65) ** 2 <= 1
-            dot = (x - 685) ** 2 + (y - 738) ** 2 <= 57 ** 2
-            ink = (stem or outer) and not hole or dot
-            raw.extend((24, 26, 29) if ink else (255, 156, 56))
+            border = 432 ** 2 <= (x - 512) ** 2 + (y - 512) ** 2 <= 488 ** 2
+            ink = (stem or outer) and not hole
+            raw.extend((18, 20, 19) if ink else (0, 116, 61) if border else (255, 255, 255))
     png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('!2I5B', size, size, 8, 2, 0, 0, 0))
     png += chunk(b'IDAT', zlib.compress(bytes(raw), 9)) + chunk(b'IEND', b'')
     assets = ROOT / 'WatchApp/Assets.xcassets'

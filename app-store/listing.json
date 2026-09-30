@@ -1,0 +1,20 @@
+{
+  "name": "You Can't Park There",
+  "subtitle": "Toronto bikes & docks on Watch",
+  "version": "1.0.0",
+  "locale": "en-CA",
+  "primary_category": "Navigation",
+  "secondary_category": "Travel",
+  "keywords": "bikeshare,cycling,bicycle,dock,parking,toronto,commute,ebike,map,favourites",
+  "promotional_text": "Find Bike Share Toronto bikes and empty docks from your Apple Watch. Save favourite stations and check availability at a glance.",
+  "copyright": "2026 Stone Chuangyi Yang",
+  "price": "Free",
+  "territories": [
+    "CA"
+  ],
+  "support_email": "stoneyang17@gmail.com",
+  "support_url": "https://yangston.github.io/youcantparkthere/",
+  "privacy_policy_url": "https://yangston.github.io/youcantparkthere/privacy.html",
+  "release": "Manual release after approval",
+  "sign_in_required": false
+}

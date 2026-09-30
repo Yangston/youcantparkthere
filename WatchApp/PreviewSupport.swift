@@ -44,8 +44,8 @@ enum SimulatorPreview {
             model.origin = scenario.gps ? .toronto : nil
             model.locationDate = scenario.gps ? model.now : nil
             model.mode = scenario.mode == "bikes" ? .bikes : .docks
-            model.page = scenario.page == "settings" ? .settings : .map
-            model.sheet = scenario.page == "detail" ? .station("demo-0") : nil
+            model.page = ["settings", "privacy"].contains(scenario.page) ? .settings : .map
+            model.sheet = scenario.page == "privacy" ? .privacy : scenario.page == "detail" ? .station("demo-0") : nil
             model.updateMapViewport(scenario.viewport ?? MapViewport(center: .toronto))
             model.cyclingSince = scenario.cycling ? model.now.addingTimeInterval(-300) : nil
             model.error = scenario.error

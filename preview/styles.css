@@ -938,11 +938,11 @@ footer span:last-child {
 .watch-pages button span { width: 5px; height: 5px; border-radius: 50%; background: #ffffff55; }
 .watch-pages button[aria-current="true"] span { background: white; }
 
-/* Dedicated touch strip: the map element ends above the controls and dots. */
+/* Dedicated touch surface; map drawing continues behind it. */
 .map-screen { display: flex; flex-direction: column; height: 100%; }
 .map-canvas { flex: 1; min-height: 0; position: relative; overflow: hidden; }
 .bottom-navigation { flex-shrink: 0; height: 56px; position: relative; background: transparent; touch-action: none; }
-.map-bottom { height: 44px; min-height: 44px; align-items: center; gap: 2px; padding: 0 4px; }
+.map-bottom { height: 44px; min-height: 44px; align-items: center; gap: 2px; padding: 0 8px; transform: translateY(3px); }
 .map-bottom > div { flex: 1; min-width: 0; margin: 0; font-size: 8px; }
 .map-bottom #gps { width: 44px; height: 44px; padding: 0; flex-shrink: 0; }
 .map-bottom #toggle-mode { min-width: 44px; height: 44px; flex: 1; padding: 0 4px; }
@@ -950,7 +950,8 @@ footer span:last-child {
 .bottom-navigation .watch-pages button { height: 12px; width: 36px; }
 .settings-page { overflow: hidden; padding: 0; display: flex; flex-direction: column; }
 .settings-content { flex: 1; min-height: 0; overflow: auto; padding: 30px 10px 8px; touch-action: pan-y; }
-.settings-swipe-hint { height: 44px; display: grid; place-items: center; font-size: 10px; color: #aab1ad; }
+.settings-page .bottom-navigation { height: 34px; }
+.settings-swipe-hint { height: 22px; display: grid; place-items: center; font-size: 10px; color: #aab1ad; }
 
 .map-bottom #gps, .map-bottom #toggle-mode { display: flex; align-items: center; background: transparent; }
 .map-bottom #gps { justify-content: center; }

@@ -1,0 +1,18 @@
+Find a bike. Find an empty dock. Check your Apple Watch.
+
+You Can't Park There helps you browse Bike Share Toronto stations on a map built for your wrist.
+
+- Switch between available bikes and spaces to park.
+- See ordinary-bike and e-bike counts separately in station details when the operator provides a complete breakdown.
+- Save favourite stations and spot them by their white map outlines.
+- Pan the map to explore another area, or recenter on your location.
+- Check update times and distinguish fresh zero availability from unknown or stale counts.
+- Open the map quickly from watch-face complications.
+
+Automatic cycling is optional. When enabled, it can recognize sustained cycling while the app is able to run, switch to the parking map and request a Smart Stack suggestion. watchOS controls the suggestion's placement. The app cannot detect cycling from a closed app, and it does not record workouts.
+
+Made for Apple Watch with watchOS 10 or later. Coverage is Bike Share Toronto; this app does not find car parking or reserve bikes or docks. Internet access is needed for current station data. Availability can change before you arrive.
+
+No app account, advertising or developer-operated location tracking. Location and motion permissions are optional. Browse downtown Toronto without GPS.
+
+Independent app, not affiliated with or endorsed by Bike Share Toronto or the Toronto Parking Authority. Station data is supplied through public GBFS feeds. Contains information licensed under the Open Government Licence - Toronto.

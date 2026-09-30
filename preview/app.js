@@ -177,6 +177,10 @@
         try { localStorage.setItem("park-preview-favorites", JSON.stringify([...state.favorites])); } catch {}
         render();
       };
+    } else if (state.page === "privacy") {
+      const policy = window.PARK_DATA.privacy;
+      screen.innerHTML = `<button id="privacy-back" class="plain">Close</button><div class="watch-title">Privacy policy</div><p class="watch-copy">Updated ${esc(policy.updated)}</p>${policy.sections.map(s => `<div class="watch-title">${esc(s.title)}</div><p class="watch-copy">${esc(s.body)}</p>`).join("")}`;
+      $("privacy-back").onclick = () => { state.page = "settings"; render(); };
     } else if (state.page === "onboarding") {
       screen.innerHTML =
         '<div class="watch-title">Ⓟ<br>You Can’t<br>Park There</div><p class="watch-copy">Find a bike. Find an empty dock. Leave your phone in your pocket.</p><p class="watch-copy">Auto-detection works while the app is running, not from a closed app.</p><button class="primary" id="enable">Enable location</button><button class="wide" id="browse">Browse downtown</button>';
@@ -190,7 +194,8 @@
         render();
       };
     } else {
-      screen.innerHTML = `<div class="settings-content"><div class="watch-title">Settings</div><label class="watch-toggle">Automatic cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.cycling ? "Cycling detected (sample)." : "Not cycling (sample)."} Detection starts while the app can run. It cannot wake a closed app.</p><p class="watch-copy">Stops after sustained non-cycling activity. Turn detection off to stop immediately.</p><label class="watch-toggle">Cycling shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Requests a Smart Stack suggestion after cycling is detected. watchOS controls placement and clock hints.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">Lightning means e-bikes are available.</p><p class="watch-copy">Automatic navigation stops after 90 minutes. No workout is recorded.</p><div class="watch-title">Legal &amp; data</div><p class="watch-copy">Apple Maps terms. Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.</p></div><div class="bottom-navigation"><div class="settings-swipe-hint">Swipe right for map</div></div>`;
+      screen.innerHTML = `<div class="settings-content"><div class="watch-title">Settings</div><label class="watch-toggle">Automatic cycling<input id="detect" type="checkbox" ${state.detect ? "checked" : ""}></label><p class="watch-copy">${state.cycling ? "Cycling detected (sample)." : "Not cycling (sample)."} Detection starts while the app can run. It cannot wake a closed app.</p><p class="watch-copy">Stops after sustained non-cycling activity. Turn detection off to stop immediately.</p><label class="watch-toggle">Cycling shortcut<input id="suggest" type="checkbox" ${state.suggest ? "checked" : ""}></label><p class="watch-copy">Requests a Smart Stack suggestion after cycling is detected. watchOS controls placement and clock hints.</p><button class="wide" id="refresh">Refresh stations</button>${scenario.error ? `<p class="watch-copy">${esc(scenario.error)}</p>` : ""}<p class="watch-copy">Lightning means e-bikes are available.</p><p class="watch-copy">Automatic navigation stops after 90 minutes. No workout is recorded.</p><div class="watch-title">Legal &amp; data</div><button class="wide" id="privacy">Privacy policy</button><p class="watch-copy">Apple Maps terms. Data: Bike Share Toronto / Toronto Parking Authority (GBFS). Unofficial app; no account, analytics, or location upload to our own server.</p></div><div class="bottom-navigation"><div class="settings-swipe-hint">Swipe right for map</div></div>`;
+      $("privacy").onclick = () => { state.page = "privacy"; render(); };
       bindPageSwipe(screen.querySelector(".settings-content"));
       bindPageSwipe(screen.querySelector(".bottom-navigation"));
       $("detect").onchange = (e) => {
