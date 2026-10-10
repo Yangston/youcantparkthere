@@ -69,10 +69,14 @@ targets:
     type: application.watchapp2-container
     platform: iOS
     deploymentTarget: "17.0"
+    sources:
+      - path: PhoneApp/Assets.xcassets
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(PARK_BUNDLE_ID)
         TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SKIP_INSTALL: NO
     info:
       path: Generated/Container-Info.plist

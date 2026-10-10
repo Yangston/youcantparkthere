@@ -5,6 +5,13 @@ import plistlib
 import sys
 from pathlib import Path
 
+
+def check_icon(bundle, info):
+    primary = info.get('CFBundleIcons', {}).get('CFBundlePrimaryIcon', {})
+    name = primary.get('CFBundleIconName') or info.get('CFBundleIconName')
+    assert name == 'AppIcon', f'{bundle.name} is missing its compiled AppIcon metadata'
+    assert (bundle / 'Assets.car').is_file(), f'{bundle.name} is missing its compiled asset catalog'
+
 archive = Path(sys.argv[1])
 apps = list((archive / 'Products/Applications').glob('*.app'))
 assert len(apps) == 1, f'Expected one iOS watch-only container, found {apps}'
@@ -31,4 +38,6 @@ assert policy.get('updated') and policy.get('supportURL') and policy.get('sectio
 assert all(s.get('title') and s.get('body') for s in policy['sections']), 'Invalid policy sections'
 widgets = list((watches[0] / 'PlugIns').glob('*.appex'))
 assert len(widgets) == 1, 'Widget extension was not embedded'
-print('Archive structure OK: watch-only container, watch app, widgets, permissions, privacy manifest.')
+check_icon(apps[0], container)
+check_icon(watches[0], watch)
+print('Archive structure OK: watch-only container, watch app, widgets, permissions, privacy manifest, both app icons.')

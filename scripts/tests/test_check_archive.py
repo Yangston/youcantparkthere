@@ -18,6 +18,8 @@ class ArchivePermissionTests(unittest.TestCase):
         self.container = self.archive / 'Products/Applications/ParkContainer.app'
         self.watch = self.container / 'Watch/ParkWatch.app'
         (self.watch / 'PlugIns/ParkWidgets.appex').mkdir(parents=True)
+        for bundle in (self.container, self.watch):
+            (bundle / 'Assets.car').write_bytes(b'fixture')
         self.watch_info = {
             'WKWatchOnly': True,
             'WKApplication': True,
@@ -30,6 +32,7 @@ class ArchivePermissionTests(unittest.TestCase):
         (self.watch / 'privacy-policy.json').write_text(json.dumps({'updated': '2026-09-30', 'supportURL': 'https://example.com', 'sections': [{'title': 'Privacy', 'body': 'Policy'}]}))
 
     def write_plist(self, bundle, info):
+        info = {'CFBundleIcons': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}}, **info}
         (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))
 
     def check(self, container_info):
@@ -71,6 +74,20 @@ class ArchivePermissionTests(unittest.TestCase):
             'NSMotionUsageDescription': 'Detect cycling on your Apple Watch when enabled.',
         })
         self.assertNotEqual(result.returncode, 0)
+
+    def test_missing_container_icon_blocks_release(self):
+        result = self.check({'ITSWatchOnlyContainer': True,
+                             'NSMotionUsageDescription': 'Detect cycling.',
+                             'CFBundleIcons': {}})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('ParkContainer.app is missing its compiled AppIcon metadata', result.stderr)
+
+    def test_missing_watch_assets_blocks_release(self):
+        (self.watch / 'Assets.car').unlink()
+        result = self.check({'ITSWatchOnlyContainer': True,
+                             'NSMotionUsageDescription': 'Detect cycling.'})
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('ParkWatch.app is missing its compiled asset catalog', result.stderr)
 
 
 if __name__ == '__main__':

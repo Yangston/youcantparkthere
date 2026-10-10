@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a deterministic, opaque 1024px app icon without external dependencies."""
+"""Generate identical opaque app artwork for the iOS container and Watch."""
 import json
 import struct
 import zlib
@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def chunk(tag: bytes, data: bytes) -> bytes:
     return struct.pack('!I', len(data)) + tag + data + struct.pack('!I', zlib.crc32(tag + data) & 0xffffffff)
 
-def main() -> None:
+def main(root: Path = ROOT) -> None:
     size = 1024
     raw = bytearray()
     for y in range(size):
@@ -25,16 +25,20 @@ def main() -> None:
             raw.extend((18, 20, 19) if ink else (0, 116, 61) if border else (255, 255, 255))
     png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('!2I5B', size, size, 8, 2, 0, 0, 0))
     png += chunk(b'IDAT', zlib.compress(bytes(raw), 9)) + chunk(b'IEND', b'')
-    assets = ROOT / 'WatchApp/Assets.xcassets'
-    icon = assets / 'AppIcon.appiconset'
-    icon.mkdir(parents=True, exist_ok=True)
-    (assets / 'Contents.json').write_text(json.dumps({'info': {'author': 'xcode', 'version': 1}}))
-    (icon / 'AppIcon.png').write_bytes(png)
-    (icon / 'Contents.json').write_text(json.dumps({
-        'images': [{'filename': 'AppIcon.png', 'idiom': 'universal', 'platform': 'watchos', 'size': '1024x1024'}],
-        'info': {'author': 'xcode', 'version': 1}
-    }, indent=2))
-    print('Generated WatchApp/Assets.xcassets/AppIcon.appiconset')
+    # The non-launchable iOS distribution container still needs its own icon.
+    # Generate both catalogs from the same bytes so App Store / iPhone and
+    # Watch icons cannot drift (App Review Guideline 2.3.8).
+    for folder, platform in [('WatchApp', 'watchos'), ('PhoneApp', 'ios')]:
+        assets = root / folder / 'Assets.xcassets'
+        icon = assets / 'AppIcon.appiconset'
+        icon.mkdir(parents=True, exist_ok=True)
+        (assets / 'Contents.json').write_text(json.dumps({'info': {'author': 'xcode', 'version': 1}}))
+        (icon / 'AppIcon.png').write_bytes(png)
+        (icon / 'Contents.json').write_text(json.dumps({
+            'images': [{'filename': 'AppIcon.png', 'idiom': 'universal', 'platform': platform, 'size': '1024x1024'}],
+            'info': {'author': 'xcode', 'version': 1}
+        }, indent=2))
+        print(f'Generated {folder}/Assets.xcassets/AppIcon.appiconset')
 
 if __name__ == '__main__':
     main()
