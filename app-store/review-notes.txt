@@ -1,11 +1,24 @@
-Native, watch-only app. The iOS bundle is Apple's non-launchable watch-only distribution container; there is no iPhone app screen and no sign-in is required. Please test on an Apple Watch with watchOS 10 or later and Internet access.
+Review information for version 1.0.0 (9.1)
 
-Coverage is Toronto, Canada. Reviewers outside Toronto can choose Browse downtown on first launch (or deny location); this opens real Toronto station data. With GPS enabled elsewhere, pan the map to Toronto to inspect station availability. There is no sample-data fallback in release/device builds.
+Guideline 2.3.8: The iOS container and Watch now use identical parking-sign artwork: black P, white background, green ring. Both targets explicitly include their AppIcon catalog.
 
-Use Park/Bikes at bottom right to switch counts. Tap a station for separate ordinary/electric counts and Favourite. The bottom controls and page dots also form a one-finger horizontal swipe surface for Settings; drag above them to pan the map.
+1. Physical-device demonstration
+youcantparkthere.mp4 is attached to the review notes and our October 1 message. It demonstrates the previous build 8.1; developer-reported device: Apple Watch Series 12, watchOS 27.0. This update changes icon packaging. Store screenshots are labelled simulator samples; sample hooks are disabled in release/device builds.
 
-Automatic cycling is off by default. Enable it in Settings and allow Motion & Fitness to test. Confident unambiguous cycling for 12 seconds while the app is active can begin navigation. Background location is used only for that automatically detected cycling navigation. Walking/driving/running for 60 seconds or stationary evidence for 180 seconds stops navigation. Turning Automatic cycling off stops it immediately. Navigation also stops after 90 minutes, with a five-minute restart pause after timeout or opt-out. No workout, silent audio or extended-runtime workaround is used. A closed app cannot detect cycling. Smart Stack suggestions are system-controlled and are cleared on stop/timeout/opt-out.
+2. Purpose and audience
+This free, independent Apple Watch app helps Bike Share Toronto riders find bikes or empty return docks. It shows availability, ordinary/e-bike counts when known, freshness and favourites. It does not find car parking, reserve/unlock bikes, process payments or record workouts. Availability may change before arrival.
 
-Privacy policy is available offline in Settings > Legal & data > Privacy policy. The app has no account, ads, analytics SDK or developer backend. It fetches public station data directly and does not upload GPS/motion to the operator feed. Public station inventory and favourites/preferences are cached locally.
+3. Setup and features
+Install the selected 1.0.0 build on an Apple Watch with watchOS 10 or later and Internet access. The iOS bundle is a non-launchable watch-only distribution container; no iPhone app screen is expected. No account, credentials, subscription or paid content is required. No user-generated content or account-deletion flow exists.
+On first launch select Browse downtown for real Toronto stations without GPS, or Enable location for nearby stations. Reviewers outside Toronto should choose Browse downtown; if GPS already centered elsewhere, pan to downtown Toronto. Release builds never fall back to demo stations.
+Use Park/Bikes at bottom right for empty docks/total bikes. Tap a pin for docks, ordinary bikes, e-bikes, freshness and Favourite. White pin borders identify favourites. A dash means unknown, not zero. The center button recenters with GPS. Swipe horizontally across the bottom controls/page dots for Settings; drag above the strip to pan. Settings includes Refresh stations, GPS status and an offline privacy policy under Legal & data. Find Docks/Find Bikes complications are launchers without live counts.
+Automatic cycling is optional and off by default. Enable it in Settings and allow Motion & Fitness. Confident unambiguous cycling for 12 seconds while active can start navigation and switch to Park. Background location is limited to detected cycling navigation. Walking/driving/running for 60 seconds or stationary evidence for 180 seconds stops it; disabling Automatic cycling stops it immediately. Navigation has a 90-minute limit and five-minute restart suppression after timeout/opt-out. A closed app cannot detect cycling. watchOS controls Smart Stack suggestions; relevance clears on stop/timeout/opt-out. No workout, HealthKit, silent audio or extended-runtime workaround is used.
 
-The attached native simulator screenshots use explicitly labelled sample availability. They show production SwiftUI screens; demo hooks are Debug + simulator-only and cannot activate in the submitted binary. Actual availability comes from Bike Share Toronto and may differ. Apple MapKit attribution is retained.
+4. External services/tools
+Bike Share Toronto / Toronto Parking Authority public GBFS HTTPS feeds at toronto.publicbikesystem.net supply station information, status and vehicle-type metadata. Apple MapKit supplies maps, Core Location optional positioning, Core Motion opt-in activity classification, and WidgetKit/App Intents launchers/suggestions. No authentication/payment/AI service, ads, analytics SDK or developer backend is used. GPS/motion are not uploaded to the station feed or developer; preferences and public station caches are local.
+
+5. Regional behaviour
+Canada-only distribution; Bike Share Toronto-only coverage. The English interface and free features are the same throughout coverage. Outside Toronto, browse Toronto with Internet access.
+
+6. Third-party material/authorization
+Station-information/navigation utility, with no regulated service. Data: https://open.toronto.ca/dataset/bike-share-toronto/ . Licence: https://open.toronto.ca/open-data-licence/ . Attribution appears in Settings and the listing; MapKit attribution is retained. Original icon. Not affiliated with or endorsed by Bike Share Toronto or the Toronto Parking Authority.
